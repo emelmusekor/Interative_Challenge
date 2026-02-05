@@ -3,139 +3,137 @@ class TaskA4 {
         this.container = document.getElementById('task-stage');
         this.init();
     }
+
     init() {
         this.container.innerHTML = `
             <div style="text-align:center;">
-                <h2>⚠️ 리스크 관리: 장애물 피하기 (Risk Management)</h2>
+                <h2>🧩 패턴 찾기 (Pattern Matching)</h2>
                 <div style="margin:10px;">
-                    Level: <span id="lvl-display">1</span>
-                    <button id="start-btn">▶️ START</button>
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
+                    <button id="new-btn">🔄 새 게임</button>
                     <button id="help-btn">?</button>
                 </div>
-                <div id="status-bar" style="height:20px; background:#ddd; width:400px; margin:0 auto; border-radius:10px; overflow:hidden;">
-                    <div id="time-bar" style="width:100%; height:100%; background:#00b894; transition:width 0.1s linear;"></div>
-                </div>
+                <p>같은 모양의 카드를 찾아 **드래그하여 겹치세요**!</p>
             </div>
             
-            <div style="position:relative; width:400px; height:500px; background:#2d3436; margin:0 auto; overflow:hidden; border-radius:10px; margin-top:10px;" id="game-area">
-                <div id="player" style="position:absolute; bottom:20px; left:180px; width:40px; height:40px; background:#0984e3; border-radius:50%; border:3px solid #74b9ff; transition:left 0.1s;">😀</div>
-                <div id="msg" style="position:absolute; top:40%; width:100%; text-align:center; color:white; font-size:24px; display:none;">READY?</div>
+            <div id="game-area" style="position:relative; width:600px; height:400px; background:#dfe6e9; margin:20px auto; border-radius:10px; border:2px solid #b2bec3;">
+                <!-- Cards will be placed here -->
+            </div>
+            
+            <div style="text-align:center;">
+                <h3 id="status-msg" style="color:#6c5ce7;"></h3>
             </div>
         `;
 
-        this.area = document.getElementById('game-area');
-        this.player = document.getElementById('player');
-        this.pPos = 180;
-        this.gameLoop = null;
-        this.isGameOver = false;
-
-        document.getElementById('start-btn').onclick = () => this.startGame(this.level || 1);
+        document.getElementById('new-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('help-btn').onclick = () => this.showHelp();
-
-        // Controls
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') this.move(-1);
-            if (e.key === 'ArrowRight') this.move(1);
-        });
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
 
         this.loadLevel(1);
     }
 
     showHelp() {
-        alert("키보드 좌우 방향키로 이동하세요.\n내려오는 빨간 장애물을 피하세요!\n시간이 끝날 때까지 살아남으면 승리!");
-    }
-
-    move(dir) {
-        if (this.isGameOver) return;
-        this.pPos += dir * 20;
-        if (this.pPos < 0) this.pPos = 0;
-        if (this.pPos > 360) this.pPos = 360;
-        this.player.style.left = this.pPos + 'px';
+        alert("같은 모양의 카드를 찾아 드래그해서 겹쳐보세요.\n모든 짝을 맞추면 성공입니다!");
     }
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-display').innerText = lvl;
-        if (this.gameLoop) clearInterval(this.gameLoop);
-        this.obstacles = [];
-        document.querySelectorAll('.obs').forEach(e => e.remove());
-        document.getElementById('msg').style.display = 'block';
-        document.getElementById('msg').innerText = "PRESS START";
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
+        const data = A4_LEVELS.generate(lvl);
+        this.items = data.items;
+        this.matchesLeft = this.items.length / 2;
+
+        document.getElementById('status-msg').innerText = `남은 쌍: ${this.matchesLeft}`;
+        this.renderCards();
     }
 
-    startGame(lvl) {
-        if (this.gameLoop) clearInterval(this.gameLoop);
-        this.isGameOver = false;
-        this.data = A4_LEVELS.generate(lvl);
-        this.timeLeft = this.data.duration;
-        this.frame = 0;
-        this.obstacles = [];
-        document.querySelectorAll('.obs').forEach(e => e.remove());
-        document.getElementById('msg').style.display = 'none';
+    renderCards() {
+        const area = document.getElementById('game-area');
+        area.innerHTML = '';
 
-        this.gameLoop = setInterval(() => this.update(), 20);
-    }
+        this.items.forEach((item, i) => {
+            if (item.matched) return; // Skip matched
 
-    update() {
-        if (this.isGameOver) return;
-        this.frame++;
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = item.pattern;
+            // Random positions if not set? Or grid?
+            // Let's use slight random scatter on grid for "Scanning" feel.
+            const row = Math.floor(i / 4);
+            const col = i % 4;
+            const top = row * 100 + 20 + (Math.random() * 20 - 10);
+            const left = col * 120 + 50 + (Math.random() * 20 - 10);
 
-        // Spawn
-        if (this.frame % Math.floor(this.data.spawnRate) === 0) {
-            this.spawnObstacle();
-        }
+            card.style.cssText = `
+                position:absolute; 
+                top:${top}px; left:${left}px; 
+                width:80px; height:100px; 
+                background:white; 
+                display:flex; justify-content:center; align-items:center; 
+                font-size:40px; 
+                border-radius:10px; 
+                box-shadow:2px 2px 5px rgba(0,0,0,0.1); 
+                cursor:grab; 
+                user-select:none;
+                border: 2px solid #0984e3;
+            `;
 
-        // Time
-        if (this.frame % 50 === 0) {
-            this.timeLeft -= 1;
-            const pct = (this.timeLeft / this.data.duration) * 100;
-            document.getElementById('time-bar').style.width = pct + '%';
-            if (this.timeLeft <= 0) this.win();
-        }
+            // Drag logic
+            card.draggable = true;
+            card.ondragstart = (e) => {
+                e.dataTransfer.setData('idx', i);
+                e.dataTransfer.effectAllowed = 'move';
+                card.style.opacity = '0.5';
+            };
 
-        // Update Obstacles
-        this.obstacles.forEach((obs, idx) => {
-            obs.y += this.data.speed;
-            obs.el.style.top = obs.y + 'px';
+            card.ondragend = (e) => {
+                card.style.opacity = '1.0';
+            };
 
-            // Defeated/Passed
-            if (obs.y > 500) {
-                obs.el.remove();
-                this.obstacles.splice(idx, 1);
-            }
+            // Drop Logic (Target)
+            card.ondragover = (e) => {
+                e.preventDefault(); // Allow drop
+                e.dataTransfer.dropEffect = 'move';
+            };
 
-            // Collision
-            // Player: pPos (Left), Bottom 20 (Top 440), w40, h40
-            // Obs: obs.x, obs.y, w40, h40
-            if (obs.y + 40 > 440 && obs.y < 480) {
-                if (obs.x < this.pPos + 40 && obs.x + 40 > this.pPos) {
-                    this.gameOver();
-                }
-            }
+            card.ondrop = (e) => {
+                e.preventDefault();
+                const srcIdx = parseInt(e.dataTransfer.getData('idx'));
+                if (srcIdx === i) return; // Self drop
+
+                this.checkMatch(srcIdx, i);
+            };
+
+            area.appendChild(card);
         });
     }
 
-    spawnObstacle() {
-        const obs = document.createElement('div');
-        obs.className = 'obs';
-        const x = Math.floor(Math.random() * 9) * 40; // Align to simple grid
-        obs.style.cssText = `position:absolute; top:-40px; left:${x}px; width:40px; height:40px; background:red; border-radius:5px; opacity:${this.data.opacity};`;
-        this.area.appendChild(obs);
-        this.obstacles.push({ el: obs, x: x, y: -40 });
-    }
+    checkMatch(id1, id2) {
+        const item1 = this.items[id1];
+        const item2 = this.items[id2];
 
-    gameOver() {
-        this.isGameOver = true;
-        clearInterval(this.gameLoop);
-        alert("충돌! 위험 감지 실패!");
-        this.loadLevel(this.level);
-    }
+        if (item1.pattern === item2.pattern) {
+            // Match!
+            item1.matched = true;
+            item2.matched = true;
+            this.matchesLeft--;
+            document.getElementById('status-msg').innerText = `남은 쌍: ${this.matchesLeft}`;
 
-    win() {
-        this.isGameOver = true;
-        clearInterval(this.gameLoop);
-        alert("안전 확보 성공! 다음 레벨로.");
-        if (this.level < 50) this.loadLevel(this.level + 1);
+            // Animation or refresh
+            this.renderCards();
+
+            if (this.matchesLeft === 0) {
+                alert("훌륭합니다! 패턴 인식 성공!");
+                if (this.level < 50) this.loadLevel(this.level + 1);
+            }
+        } else {
+            // No match visual feedback?
+            alert("모양이 다릅니다.");
+        }
     }
 }
 window.onload = () => new TaskA4();

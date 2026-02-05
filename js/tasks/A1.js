@@ -8,7 +8,7 @@ class TaskA1 {
             <div style="text-align:center;">
                 <h2>🕵️ 탐정 놀이: 몽타주 만들기 (Data Scanning)</h2>
                 <div style="margin:10px;">
-                    Level: <span id="lvl-display">1</span>
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
                     <button id="new-btn">🔄 새로운 용의자</button>
                     <button id="help-btn">?</button>
                 </div>
@@ -41,6 +41,10 @@ class TaskA1 {
         document.getElementById('new-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('help-btn').onclick = () => this.showHelp();
         document.getElementById('submit-btn').onclick = () => this.check();
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
 
         this.loadLevel(1);
     }
@@ -57,7 +61,8 @@ class TaskA1 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-display').innerText = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
         const data = A1_LEVELS.generate(lvl);
         this.target = data.target;
         this.options = data.options;

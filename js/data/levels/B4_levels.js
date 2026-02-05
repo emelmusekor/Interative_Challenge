@@ -1,25 +1,46 @@
 window.B4_LEVELS = {
     generate: function (lvl) {
-        // Informatics: Debugging (Syntax vs Logic)
-        // Lvl 1: One obvious typo (Syntax Error)
-        // Lvl 10: Logic Error (Code runs but wrong result)
-        // Lvl 30: Multiple complex bugs
+        // Domain: Logic AI(B) -> Debugging/Sequencing
+        // Task: Reorder code blocks to make logical sense.
 
-        const type = lvl < 10 ? 'syntax' : 'logic';
-
-        const problems = [
-            { t: 'syntax', q: 'print("Hello Worl")', a: 'print("Hello World")', hint: '철자가 틀렸어요.' },
-            { t: 'syntax', q: 'if(x = 5)', a: 'if(x == 5)', hint: '비교 연산자는 == 입니다.' },
-            { t: 'logic', q: 'if(hungry) eat("Rock")', a: 'if(hungry) eat("Food")', hint: '돌을 먹으면 안돼요!' },
-            { t: 'logic', q: 'for(i=0; i<0; i++)', a: 'for(i=0; i<10; i++)', hint: '반복문이 실행되지 않아요.' }
+        const sequences = [
+            {
+                // Making Ramen
+                blocks: ["물 끓이기", "면 넣기", "스프 넣기", "3분 기다리기", "먹기"],
+                hint: "라면을 끓이는 순서를 생각해보세요."
+            },
+            {
+                // Planting
+                blocks: ["땅 파기", "씨앗 심기", "물 주기", "햇볕 쬐기", "꽃 피우기"],
+                hint: "식물이 자라는 과정을 생각해보세요."
+            },
+            {
+                // Coding simple loop
+                blocks: ["i = 0", "while (i < 5)", "print(i)", "i = i + 1", "End Loop"],
+                hint: "반복문의 실행 순서를 생각해보세요."
+            },
+            {
+                // Morning Routine
+                blocks: ["일어나기", "세수하기", "옷 입기", "가방 챙기기", "학교 가기"],
+                hint: "아침에 학교 갈 때까지의 순서입니다."
+            }
         ];
 
-        const p = problems[Math.floor(Math.random() * problems.length)];
+        // Pick one based on level (cyclic)
+        const data = sequences[(lvl - 1) % sequences.length];
 
+        // Create shuffled array
+        let shuffled = [...data.blocks];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+
+        // Return both Correct Order (for checking) and Shuffled (for display)
         return {
-            question: p.q,
-            answer: p.a,
-            hint: p.hint
+            correct: data.blocks,
+            shuffled: shuffled,
+            hint: data.hint
         };
     }
 };

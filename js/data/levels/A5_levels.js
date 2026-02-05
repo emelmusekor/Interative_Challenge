@@ -3,8 +3,8 @@ window.A5_LEVELS = {
         // Optimization Problem
         // Stars: Value points
         // Walls: Blockers
-        const starCount = 5 + lvl;
-        const wallCount = 3 + Math.floor(lvl / 2);
+        const starCount = Math.min(20, 5 + Math.floor(lvl / 2));
+        const wallCount = Math.min(10, 3 + Math.floor(lvl / 2));
 
         const stars = [];
         for (let i = 0; i < starCount; i++) {

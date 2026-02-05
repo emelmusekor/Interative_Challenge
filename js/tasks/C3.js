@@ -8,7 +8,7 @@ class TaskC3 {
             <div style="text-align:center;">
                 <h2>🔐 암호 해독 (Symbolization)</h2>
                 <div style="margin:10px;">
-                    Level: <span id="lvl-display">1</span>
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
                     <button id="new-btn">🔄 새 암호</button>
                     <button id="help-btn">?</button>
                 </div>
@@ -31,6 +31,10 @@ class TaskC3 {
         document.getElementById('new-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('help-btn').onclick = () => this.showHelp();
         document.getElementById('check-btn').onclick = () => this.check();
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
 
         this.loadLevel(1);
     }
@@ -41,7 +45,8 @@ class TaskC3 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-display').innerText = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
         const data = C3_LEVELS.generate(lvl);
         this.answer = data.word;
         this.encoded = data.encoded;

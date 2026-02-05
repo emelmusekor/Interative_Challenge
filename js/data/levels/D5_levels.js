@@ -1,53 +1,63 @@
-// D5 - Toy Trader Levels
 window.D5_LEVELS = {
-    1: { nodes: [{ id: 'S', x: 200, y: 200, label: 'S' }, { id: 'E', x: 400, y: 200, label: 'E' }], edges: [{ u: 'S', v: 'E', cost: 5 }], start: 'S', end: 'E', optimal: 5 },
-    2: { nodes: [{ id: 'S', x: 150, y: 300, label: 'S' }, { id: 'A', x: 400, y: 150, label: 'A' }, { id: 'B', x: 400, y: 450, label: 'B' }, { id: 'E', x: 650, y: 300, label: 'E' }], edges: [{ u: 'S', v: 'A', cost: 5 }, { u: 'A', v: 'E', cost: 5 }, { u: 'S', v: 'B', cost: 2 }, { u: 'B', v: 'E', cost: 3 }], start: 'S', end: 'E', optimal: 5 },
-    3: { nodes: [{ id: 'S', x: 100, y: 300, label: 'S' }, { id: 'A', x: 300, y: 150, label: 'A' }, { id: 'B', x: 300, y: 450, label: 'B' }, { id: 'E', x: 600, y: 300, label: 'E' }], edges: [{ u: 'S', v: 'A', cost: 1 }, { u: 'S', v: 'B', cost: 4 }, { u: 'A', v: 'E', cost: 8 }, { u: 'B', v: 'E', cost: 4 }], start: 'S', end: 'E', optimal: 8 },
-    // Levels 4-50 generated procedurally in engine if missing, or we can copy more from the old file.
-    // Copying a few more for structure.
-    4: { nodes: [{ id: 'S', x: 100, y: 300, label: 'S' }, { id: 'A', x: 300, y: 200, label: 'A' }, { id: 'B', x: 300, y: 400, label: 'B' }, { id: 'E', x: 600, y: 300, label: 'E' }], edges: [{ u: 'S', v: 'A', cost: 5 }, { u: 'S', v: 'B', cost: 8 }, { u: 'A', v: 'B', cost: 1 }, { u: 'A', v: 'E', cost: 10 }, { u: 'B', v: 'E', cost: 2 }], start: 'S', end: 'E', optimal: 8 }
-};
+    generate: function (lvl) {
+        // Informatics: Shortest Path Algorithms (Dijkstra) & Cost Optimization
+        // Labels: Start -> A -> B ... -> End
+        // Difficulty: Increases nodes and edges significantly per level
 
-// Procedural Generator for remaining levels attached to the data object
-window.D5_LEVELS.generate = function (lvl) {
-    if (this[lvl]) return this[lvl];
+        // More conservative node count scaling (Max 12)
+        const nodeCount = Math.min(12, 3 + Math.floor(lvl / 3));
+        // Lower edge density to keep graph readable
+        const edgeDensity = 1.0 + (Math.min(lvl, 50) * 0.02); // Max 2.0 density
 
-    // Simple generator for Level > 4
-    const nodeCount = Math.min(15, 4 + Math.floor(lvl / 5));
-    const width = 800, height = 500;
-    const padding = 50;
+        const nodes = [];
+        for (let i = 0; i < nodeCount; i++) {
+            let label;
+            if (i === 0) label = "Start";
+            else if (i === nodeCount - 1) label = "End";
+            else label = String.fromCharCode(65 + (i - 1)); // A, B, C...
 
-    const nodes = [];
-    nodes.push({ id: 'S', x: padding, y: height / 2, label: 'S' });
-    nodes.push({ id: 'E', x: width - padding, y: height / 2, label: 'E' });
+            nodes.push({
+                id: i,
+                label: label,
+                x: Math.random() * 500 + 50,
+                y: Math.random() * 300 + 50
+            });
+        }
 
-    for (let i = 0; i < nodeCount - 2; i++) {
-        nodes.push({
-            id: 'N' + i,
-            x: padding + Math.random() * (width - 2 * padding),
-            y: padding + Math.random() * (height - 2 * padding),
-            label: String.fromCharCode(65 + (i % 26))
-        });
-    }
+        const edges = [];
+        // Ensure connectivity (Spanning Tree first)
+        for (let i = 0; i < nodeCount - 1; i++) {
+            // Connect to random previous node to ensure reachability from 0
+            // But prefer creating a chain that isn't straight 0->1->2 to make it interesting
+            const target = i; // Simplified chain 0-1, 1-2 to guarantee basic path
+            const weight = Math.floor(Math.random() * 10) + 1;
+            edges.push({ from: i, to: i + 1, weight });
+        }
 
-    // Sort by X for flow
-    nodes.sort((a, b) => a.x - b.x);
+        // Add random edges for complexity
+        const extraEdges = Math.floor(nodeCount * edgeDensity);
+        const endNode = nodeCount - 1;
 
-    const edges = [];
-    for (let i = 0; i < nodes.length - 1; i++) {
-        const u = nodes[i];
-        // Connect to 1-3 forward nodes
-        const connections = 1 + Math.floor(Math.random() * 2);
-        for (let k = 1; k <= connections; k++) {
-            if (i + k < nodes.length) {
-                const v = nodes[i + k];
-                const dist = Math.hypot(u.x - v.x, u.y - v.y);
-                const cost = Math.max(1, Math.floor(dist / 50));
-                edges.push({ u: u.id, v: v.id, cost: cost });
+        // Remove direct connection if it exists in initial tree (Unlikely with loop 0->1->...->N-1 unless N=2)
+        // But to be safe, if nodeCount > 2, we shouldn't have 0 -> N-1 directly.
+        // The chain 0->1->2... ensures 0 connects to 1, N-2 connects to N-1.
+        // So direct 0->N-1 only happens if N=2. If N=2, we can't help it.
+
+        for (let i = 0; i < extraEdges; i++) {
+            const u = Math.floor(Math.random() * nodeCount);
+            const v = Math.floor(Math.random() * nodeCount);
+
+            // Prevent self-loop, existing, OR Start-End direct connection (if nodes > 2)
+            const isStartEnd = (u === 0 && v === endNode) || (v === 0 && u === endNode);
+
+            if (u !== v &&
+                !edges.some(e => (e.from === u && e.to === v) || (e.from === v && e.to === u)) &&
+                (!isStartEnd || nodeCount <= 2)
+            ) {
+                edges.push({ from: u, to: v, weight: Math.floor(Math.random() * 10) + 1 });
             }
         }
-    }
 
-    // Calculate optimal (Mock)
-    return { nodes, edges, start: 'S', end: 'E', optimal: 0 };
+        return { nodes, edges, start: 0, end: nodeCount - 1 };
+    }
 };

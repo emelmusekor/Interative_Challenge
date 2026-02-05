@@ -14,7 +14,7 @@ window.B5_LEVELS = {
             });
         }
 
-        const workers = 1 + Math.floor(lvl / 10);
+        const workers = 2 + Math.floor(lvl / 10);
 
         return { tasks, workers };
     }

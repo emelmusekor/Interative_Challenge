@@ -9,9 +9,7 @@ class TaskC2 {
         this.container.innerHTML = `
             <div style="text-align:center; padding:10px;">
                 <h2>🔄 스마트 분류기 (Smart Sorter)</h2>
-                Level: <select id="lvl-sel">
-                    ${Array.from({ length: 50 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
-                </select>
+                Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
                 <button id="regen-btn" style="margin-left:10px;">🔄 초기화</button>
             </div>
             <div id="game-stage" style="position:relative; width:600px; height:400px; background:#222; margin:0 auto; border-radius:10px; overflow:hidden;">
@@ -27,7 +25,10 @@ class TaskC2 {
         this.canvas = document.getElementById('sim-canvas');
         this.ctx = this.canvas.getContext('2d');
 
-        document.getElementById('lvl-sel').onchange = (e) => this.loadLevel(parseInt(e.target.value));
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
         document.getElementById('regen-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('start-btn').onclick = () => this.toggle();
         this.canvas.onclick = (e) => this.onClick(e);
@@ -37,7 +38,8 @@ class TaskC2 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-sel').value = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
         this.playing = false;
         document.getElementById('start-btn').innerText = "START";
 
@@ -120,15 +122,22 @@ class TaskC2 {
 
         // Gates
         this.gates.forEach(g => {
+            // Draw Pivot
             ctx.fillStyle = '#b2bec3';
-            ctx.fillRect(g.x - 15, g.y - 5, 30, 10);
+            ctx.beginPath(); ctx.arc(g.x, g.y, 15, 0, Math.PI * 2); ctx.fill();
 
+            // Draw Lever
             ctx.beginPath();
             ctx.moveTo(g.x, g.y);
-            ctx.lineTo(g.x + (g.dir * 30), g.y + 30);
+            ctx.lineTo(g.x + (g.dir * 40), g.y + 40);
             ctx.strokeStyle = 'white';
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 6;
             ctx.stroke();
+
+            // Draw Arrow hint
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.font = '12px Arial';
+            ctx.fillText(g.dir > 0 ? "R" : "L", g.x - 5, g.y - 20);
         });
 
         // Bins
@@ -156,7 +165,8 @@ class TaskC2 {
         const y = e.clientY - r.top;
 
         this.gates.forEach(g => {
-            if (Math.hypot(g.x - x, g.y - y) < 30) {
+            // Increased Hit Radius
+            if (Math.hypot(g.x - x, g.y - y) < 50) {
                 g.dir *= -1;
                 this.draw();
             }

@@ -1,21 +1,26 @@
 window.A4_LEVELS = {
     generate: function (lvl) {
-        // Informatics: Parallel Processing & Throughput
-        // Lvl 1-10: Single stream, slow.
-        // Lvl 11-30: Faster, multiple items at once (Parallelism).
-        // Lvl 31-50: "Overload" - High speed, high density, must prioritize.
+        // Domain: Vision AI(A) -> Classification(2) / Pattern Matching
+        // Task: Drag & Drop matching patterns.
 
-        const speed = 2 + (lvl * 0.3);
-        const spawnRate = Math.max(10, 80 - (lvl * 1.5));
-        const opacity = 1.0; // Keep visible, focusing on reaction/parallelism
-        const multiSpawnProb = lvl > 20 ? 0.3 : 0; // Chance to spawn 2 at once
+        const cardCount = Math.min(16, 2 + Math.floor(lvl / 3) * 2); // 2, 4, ... 16
+        const patterns = ['★', '●', '▲', '■', '♥', '♦', '♣', '♠', '☀', '☁'];
 
+        // Select subset
+        const selected = patterns.slice(0, cardCount / 2); // Pairs
+        // Create pairs
+        let items = [...selected, ...selected];
+
+        // Shuffle
+        for (let i = items.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [items[i], items[j]] = [items[j], items[i]];
+        }
+
+        // Return objects
         return {
-            speed: speed,
-            spawnRate: spawnRate,
-            opacity: opacity,
-            multiSpawnProb: multiSpawnProb,
-            duration: 15 + lvl
+            items: items.map((p, i) => ({ id: i, pattern: p })),
+            target: selected
         };
     }
 };

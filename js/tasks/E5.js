@@ -1,145 +1,114 @@
-
-// E5 - 이어달리기 전략
-const E5_Data = {
-    type: "ALLOCATION",
-    title: "이어달리기 전략",
-    desc: "가장 빠른 주자를 앵커(마지막)에 배치하세요.",
-    mission: "",
-    items: ["거북이(느림)", "토끼(중간)", "다람쥐(중간)", "치타(빠름)"],
-    
-    slots: ["1번", "2번", "3번", "4번(앵커)"],
-    
-    answer: {"4번(앵커)": "치타(빠름)"},
-    
-    
-    
-    
-    
-    
-};
-
 class TaskE5 {
     constructor() {
         this.container = document.getElementById('task-stage');
-        this.data = E5_Data;
-        this.state = {};
         this.init();
     }
-
     init() {
-        // Setup Header
-        document.getElementById('task-title').innerText = this.data.title;
-        document.getElementById('task-desc').innerText = this.data.desc;
-        if(this.data.mission) {
-            const m = document.createElement('div');
-            m.className = 'mission-box';
-            m.innerText = this.data.mission;
-            document.getElementById('task-desc').appendChild(m);
-        }
-        if(this.data.hint) {
-             const h = document.createElement('div');
-             h.className = 'hint-text';
-             h.innerText = this.data.hint;
-             this.container.appendChild(h);
-        }
-        
-        this.render();
+        this.container.innerHTML = `
+            <div style="text-align:center;">
+                <h2>🤖 인공지능 트레이닝 (AI)</h2>
+                <div style="margin:10px;">
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
+                    <button id="new-btn">🔄 새 데이터</button>
+                    <button id="help-btn">?</button>
+                </div>
+            </div>
+            
+            <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
+                <div style="background:#dfe6e9; padding:20px; border-radius:10px;">
+                    <h3>학습 데이터 (Training Data)</h3>
+                    <div id="training-set" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;"></div>
+                </div>
+            </div>
+            
+            <div style="text-align:center; margin-top:30px;">
+                <h3>이것은 어느 그룹일까요? (Test)</h3>
+                <div id="test-item" style="width:100px; height:100px; margin:10px auto; background:#fff; border:2px solid #333; display:flex; justify-content:center; align-items:center;"></div>
+                <div style="margin-top:10px; display:flex; justify-content:center; gap:20px;">
+                    <button id="btn-a" style="padding:15px 40px; font-size:20px; background:#0984e3; color:white; border:none; border-radius:10px; cursor:pointer;">A 그룹</button>
+                    <button id="btn-b" style="padding:15px 40px; font-size:20px; background:#e84393; color:white; border:none; border-radius:10px; cursor:pointer;">B 그룹</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('new-btn').onclick = () => this.loadLevel(this.level || 1);
+        document.getElementById('help-btn').onclick = () => this.showHelp();
+        document.getElementById('btn-a').onclick = () => this.check('A');
+        document.getElementById('btn-b').onclick = () => this.check('B');
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
+
+        this.loadLevel(1);
     }
 
-    render() {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'alloc-wrapper';
-        
-        // Source
-        const source = document.createElement('div');
-        source.className = 'alloc-source';
-        this.data.items.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'alloc-item';
-            el.draggable = true;
-            el.innerText = item;
-            el.id = 'item-'+item;
-            el.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text', item);
-            });
-            source.appendChild(el);
-        });
-        
-        // Slots
-        const slotsDiv = document.createElement('div');
-        slotsDiv.className = 'alloc-slots';
-        this.data.slots.forEach(sName => {
-            const slot = document.createElement('div');
-            slot.className = 'alloc-slot';
-            slot.innerHTML = `<div class='slot-title'>${sName}</div>`;
-            slot.dataset.name = sName;
-            
-            slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('dragover'); });
-            slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
-            slot.addEventListener('drop', e => {
-                e.preventDefault();
-                slot.classList.remove('dragover');
-                const data = e.dataTransfer.getData('text');
-                
-                // Allow logic
-                if(!this.data.multi_alloc) {
-                    // Single item per slot? 
-                    // Remove existing if any
-                    const existing = slot.querySelector('.alloc-item');
-                    if(existing) source.appendChild(existing); 
-                }
-                
-                // Move element
-                # Find original everywhere
-                const el = document.getElementById('item-'+data);
-                if(el) slot.appendChild(el);
-                
-                this.check();
-            });
-            slotsDiv.appendChild(slot);
-        });
-        
-        wrapper.appendChild(source);
-        wrapper.appendChild(slotsDiv);
-        this.container.appendChild(wrapper);
-    }
-    
-    check() {
-        const slots = document.querySelectorAll('.alloc-slot');
-        let correct = true;
-        let set_items = 0;
-        
-        slots.forEach(s => {
-            const sName = s.dataset.name;
-            const itemEls = s.querySelectorAll('.alloc-item');
-            const items = [...itemEls].map(e => e.innerText);
-            set_items += items.length;
-            
-            const ans = this.data.answer[sName];
-            
-            if(Array.isArray(ans)) {
-                // Multi check (C2)
-                if(items.length !== ans.length) correct = false;
-                else {
-                    items.sort(); ans.sort();
-                    if(JSON.stringify(items) !== JSON.stringify(ans)) correct = false;
-                }
-            } else {
-                // Single check
-                if(items.length !== 1 || items[0] !== ans) correct = false;
-            }
-        });
-        
-        const totalItems = this.data.items.length;
-        if(set_items === totalItems && correct) this.success();
+    showHelp() {
+        alert("학습 데이터를 보고 규칙을 찾으세요.\n(예: 빨간색은 A, 파란색은 B)\n규칙에 따라 테스트 데이터의 그룹을 맞추세요.");
     }
 
-    success() {
-        const msg = document.getElementById('success-msg');
-        if(msg) msg.style.display = 'block';
+    loadLevel(lvl) {
+        this.level = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
+        const data = E5_LEVELS.generate(lvl);
+        this.training = data.training;
+        this.test = data.test;
+        this.answer = data.answer;
+
+        this.renderTraining();
+        this.renderTest();
+    }
+
+    createItemEl(item, showLabel = false) {
+        const el = document.createElement('div');
+        el.style.cssText = "width:60px; height:60px; background:#fff; border:1px solid #ccc; display:flex; flex-direction:column; justify-content:center; align-items:center;";
+
+        const shape = document.createElement('div');
+        shape.style.width = '40px';
+        shape.style.height = '40px';
+        shape.style.backgroundColor = item.color === 'red' ? '#ff7675' : '#0984e3';
+        shape.style.borderRadius = item.shape === 'circle' ? '50%' : '0%';
+
+        el.appendChild(shape);
+
+        if (showLabel) {
+            const lbl = document.createElement('div');
+            lbl.innerText = item.group;
+            lbl.style.fontWeight = 'bold';
+            lbl.style.color = item.group === 'A' ? '#0984e3' : '#e84393';
+            el.appendChild(lbl);
+        }
+        return el;
+    }
+
+    renderTraining() {
+        const c = document.getElementById('training-set');
+        c.innerHTML = '';
+        this.training.forEach(t => {
+            c.appendChild(this.createItemEl(t, true));
+        });
+    }
+
+    renderTest() {
+        const c = document.getElementById('test-item');
+        c.innerHTML = '';
+        const item = this.createItemEl(this.test, false);
+        item.style.border = 'none';
+        item.style.width = '100px';
+        item.style.height = '100px';
+        item.firstChild.style.width = '80px';
+        item.firstChild.style.height = '80px';
+        c.appendChild(item);
+    }
+
+    check(choice) {
+        if (choice === this.answer) {
+            alert("정답! 인공지능 모델이 학습되었습니다.");
+            if (this.level < 50) this.loadLevel(this.level + 1);
+        } else {
+            alert("틀렸습니다. 학습 데이터를 다시 살펴보세요.");
+        }
     }
 }
-
-window.onload = () => {
-    new TaskE5();
-};
+window.onload = () => new TaskE5();

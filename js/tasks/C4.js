@@ -8,7 +8,7 @@ class TaskC4 {
             <div style="text-align:center;">
                 <h2>✅ OX 퀴즈 탐정 (Verification)</h2>
                 <div style="margin:10px;">
-                    Level: <span id="lvl-display">1</span>
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
                     <button id="new-btn">🔄 새 문제</button>
                     <button id="help-btn">?</button>
                 </div>
@@ -28,6 +28,10 @@ class TaskC4 {
         document.getElementById('help-btn').onclick = () => this.showHelp();
         document.getElementById('btn-o').onclick = () => this.check(true);
         document.getElementById('btn-x').onclick = () => this.check(false);
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
 
         this.loadLevel(1);
     }
@@ -38,7 +42,8 @@ class TaskC4 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-display').innerText = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
         const data = C4_LEVELS.generate(lvl);
         this.answer = data.a;
         document.getElementById('quiz-text').innerText = data.q;

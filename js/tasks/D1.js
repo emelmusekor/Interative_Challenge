@@ -8,7 +8,7 @@ class TaskD1 {
             <div style="text-align:center;">
                 <h2>🎁 마니또 찾기 (Link Discovery)</h2>
                 <div style="margin:10px;">
-                    Level: <span id="lvl-display">1</span>
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
                     <button id="new-btn">🔄 새 관계</button>
                     <button id="help-btn">?</button>
                 </div>
@@ -27,6 +27,10 @@ class TaskD1 {
 
         document.getElementById('new-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('help-btn').onclick = () => this.showHelp();
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
 
         this.loadLevel(1);
     }
@@ -37,7 +41,8 @@ class TaskD1 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-display').innerText = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
         const data = D1_LEVELS.generate(lvl);
         this.people = data.people;
         this.edges = data.edges;

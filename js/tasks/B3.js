@@ -9,9 +9,7 @@ class TaskB3 {
         this.container.innerHTML = `
             <div style="text-align:center; margin-bottom:15px;">
                 <h2>🚂 기차 선로 연결 (Train Master)</h2>
-                Level: <select id="lvl-sel">
-                    ${Array.from({ length: 50 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
-                </select>
+                Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
                 <button id="regen-btn" style="margin-left:10px;">🔄 새로운 맵</button>
                 <button id="help-btn" style="margin-left:5px;">?</button>
             </div>
@@ -45,7 +43,10 @@ class TaskB3 {
         `;
         this.container.appendChild(style);
 
-        document.getElementById('lvl-sel').onchange = (e) => this.loadLevel(parseInt(e.target.value));
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
         document.getElementById('regen-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('run-btn').onclick = () => this.check();
         document.getElementById('help-btn').onclick = () => this.showHelp();
@@ -87,7 +88,8 @@ class TaskB3 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-sel').value = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
 
         this.size = lvl > 10 ? (lvl > 30 ? 6 : 5) : 4; // 4x4, 5x5, 6x6
         this.grid = Array(this.size * this.size).fill(null);

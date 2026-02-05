@@ -8,14 +8,14 @@ class TaskA3 {
             <div style="text-align:center;">
                 <h2>🌀 미로 탈출 시뮬레이션 (Simulation)</h2>
                 <div style="margin:10px;">
-                    Level: <select id="lvl-sel" onchange="game.loadLevel(this.value)">${Array.from({ length: 50 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}</select>
-                    <button id="new-btn" onclick="game.loadLevel(game.level)">🔄 새로운 미로</button>
-                    <button id="help-btn" onclick="game.showHelp()">?</button>
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
+                    <button id="new-btn">🔄 새로운 미로</button>
+                    <button id="help-btn">?</button>
                 </div>
             </div>
             
             <div style="display:flex; justify-content:center; gap:20px;">
-                <canvas id="maze-canvas" width="400" height="400" style="background:#2d3436; border-radius:10px;"></canvas>
+                <canvas id="maze-canvas" width="500" height="500" style="background:#2d3436; border-radius:10px;"></canvas>
                 
                 <div style="width:150px; text-align:center;">
                     <h4>명령어 입력</h4>
@@ -44,6 +44,13 @@ class TaskA3 {
         document.getElementById('run-sim').onclick = () => this.run();
         document.getElementById('reset-sim').onclick = () => { this.cmds = []; this.renderCmds(); this.player = { ...this.start }; this.render(); };
 
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
+        document.getElementById('new-btn').onclick = () => this.loadLevel(this.level);
+        document.getElementById('help-btn').onclick = () => this.showHelp();
+
         window.game = this; // Hack for HTML onchange
         this.loadLevel(1);
     }
@@ -54,7 +61,8 @@ class TaskA3 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-sel').value = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
         const data = A3_LEVELS.generate(lvl);
         this.size = data.size;
         this.grid = data.grid;
@@ -81,12 +89,12 @@ class TaskA3 {
 
     render() {
         const ctx = this.ctx;
-        const pad = 400 / this.size;
-        ctx.clearRect(0, 0, 400, 400);
+        const pad = 500 / this.size;
+        ctx.clearRect(0, 0, 500, 500);
 
         // Fog Background
         ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, 400, 400);
+        ctx.fillRect(0, 0, 500, 500);
 
         for (let r = 0; r < this.size; r++) {
             for (let c = 0; c < this.size; c++) {

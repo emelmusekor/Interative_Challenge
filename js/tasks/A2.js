@@ -10,9 +10,7 @@ class TaskA2 {
             <div style="text-align:center; padding:10px;">
                 <h2 style="font-family:'Jua'; color:#2d3436;">👽 외계인 분류 (Galaxy Zoo)</h2>
                 <div style="margin-bottom:15px;">
-                     Level: <select id="lvl-sel">
-                        ${Array.from({ length: 50 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
-                     </select>
+                     Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
                      <button id="new-btn" style="margin-left:10px;">🔄 새로운 문제</button>
                      <button id="help-btn" style="margin-left:5px;">?</button>
                 </div>
@@ -20,7 +18,10 @@ class TaskA2 {
             </div>
         `;
 
-        document.getElementById('lvl-sel').onchange = (e) => this.loadLevel(parseInt(e.target.value));
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
         document.getElementById('new-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('help-btn').onclick = () => this.showHelp();
 
@@ -47,14 +48,15 @@ class TaskA2 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-sel').value = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
 
-        // Generate Logic
-        const features = ['eyes', 'horns', 'color', 'shape'];
-        // Randomly pick a rule
-        this.rule = features[Math.floor(Math.random() * features.length)];
+        // Use standard level generation
+        const data = A2_LEVELS.generate(lvl);
+        this.rule = data.rule.key;
+        this.ruleData = data.rule; // Store full rule object
+        this.featureDetails = data.featureDetails;
 
-        // Generate Groups
         this.renderGame();
     }
 
@@ -126,19 +128,76 @@ class TaskA2 {
         board.appendChild(opts);
     }
 
-    genConfig(rule) {
-        // Returns values for Group A and Group B based on rule
-        if (rule === 'eyes') return { A: 1, B: 2 }; // Could be random: 1vs3, 2vs3
-        if (rule === 'horns') return { A: 0, B: 1 };
-        if (rule === 'color') return { A: '#fab1a0', B: '#74b9ff' }; // Red-ish vs Blue-ish
-        if (rule === 'shape') return { A: '50%', B: '0%' }; // Circle vs Square (border-radius)
-        return { A: 1, B: 2 };
+    genConfig(ruleKey) {
+        // ruleKey is just the primary key name (e.g. 'eyes'), but we need the full rule object
+        // this.ruleData = { type, key, val, k1, v1, val: ..., desc ... }
 
-        // To be truly robust, we should randomize the values too, e.g. A=Red, B=Green one time, A=Yellow B=Blue next.
-        // But hardcoded contrast is safer for now.
+        const details = this.featureDetails;
+        const r = this.ruleData;
+
+        // Group A = Positive, Group B = Negative
+
+        if (r.type === 'simple') {
+            const targetVal = r.val;
+            // B gets random OTHER
+            const options = details[r.key];
+            const others = options.filter(v => v !== targetVal);
+            const valB = others[Math.floor(Math.random() * others.length)];
+
+            // Return simple object (createAlien handles basic key override)
+            // But createAlien expects {A: val, B: val} for 'this.rule'.
+            // If we are compliant with simple rule, this works.
+            return { A: targetVal, B: valB };
+        }
+
+        if (r.type === 'not') {
+            const avoidVal = r.val;
+            // A gets ANYTHING except avoidVal
+            const options = details[r.key];
+            const valid = options.filter(v => v !== avoidVal);
+            const valA = valid[Math.floor(Math.random() * valid.length)];
+
+            // B gets avoidVal (Violation)
+            return { A: valA, B: avoidVal };
+        }
+
+        if (r.type === 'and') {
+            // A matches k1=v1 AND k2=v2
+            // B matches k1!=v1 OR k2!=v2
+
+            // We need to return an object that creates specific alien properties.
+            // Current createAlien(rule, val) only overrides 'rule' property with 'val'.
+            // It doesn't support multiple properties.
+
+            // We will return a SPECIAL object that createAlien will detect.
+            // B: Randomize which condition fails (1, 2, or both)
+            const failMode = Math.random();
+            let bObj = {};
+            if (failMode < 0.33) { // Fail K1
+                const opts1 = details[r.k1].filter(x => x !== r.v1);
+                bObj[r.k1] = opts1[Math.floor(Math.random() * opts1.length)];
+                bObj[r.k2] = r.v2;
+            } else if (failMode < 0.66) { // Fail K2
+                bObj[r.k1] = r.v1;
+                const opts2 = details[r.k2].filter(x => x !== r.v2);
+                bObj[r.k2] = opts2[Math.floor(Math.random() * opts2.length)];
+            } else { // Fail Both
+                const opts1 = details[r.k1].filter(x => x !== r.v1);
+                const opts2 = details[r.k2].filter(x => x !== r.v2);
+                bObj[r.k1] = opts1[Math.floor(Math.random() * opts1.length)];
+                bObj[r.k2] = opts2[Math.floor(Math.random() * opts2.length)];
+            }
+
+            return {
+                A: { [r.k1]: r.v1, [r.k2]: r.v2, _multi: true },
+                B: { ...bObj, _multi: true }
+            };
+        }
+
+        return { A: r.val, B: r.val }; // Fallback
     }
 
-    createAlien(rule, val) {
+    createAlien(ruleKey, val) {
         const el = document.createElement('div');
         el.style.width = '60px';
         el.style.height = '60px';
@@ -154,21 +213,64 @@ class TaskA2 {
         let color = '#a29bfe';
         let radius = '50%'; // Circle
 
-        // Override based on rule
-        if (rule === 'eyes') eyes = val;
-        else eyes = 1 + Math.floor(Math.random() * 3);
+        // Override if multi or simple
+        if (val && val._multi) {
+            // Apply multiple props
+            if (val.eyes) eyes = val.eyes;
+            if (val.horns) horns = val.horns;
+            if (val.color) color = val.color;
+            if (val.shape) radius = val.shape;
+        } else {
+            // Fallback single rule
+            if (ruleKey === 'eyes' || ruleKey === 'featureDetails') eyes = val; // Check logic? ruleKey is primary rule name.
+            // Actually, createAlien logic was simplistic: if(rule === 'eyes') eyes = val;
+            // We need to keep randomizing NON-rule features.
+            // But if val has spec, use it.
 
-        if (rule === 'horns') horns = val;
-        else horns = Math.floor(Math.random() * 3);
+            if (ruleKey === 'eyes') eyes = val;
+            if (ruleKey === 'horns') horns = val;
+            if (ruleKey === 'color') color = val;
+            if (ruleKey === 'shape') radius = val;
+        }
 
-        if (rule === 'color') color = val;
-        else {
+        // Randomize others if NOT set above (defaults are simplistic)
+        // We need a way to know if it was set?
+        // Let's re-randomize everything first, then apply overrides.
+
+        if (!val || !val.eyes) if (ruleKey !== 'eyes') eyes = 1 + Math.floor(Math.random() * 3);
+        if (!val || !val.horns) if (ruleKey !== 'horns') horns = Math.floor(Math.random() * 3);
+        if (!val || !val.color) if (ruleKey !== 'color') {
             const colors = ['#a29bfe', '#55efc4', '#ffeaa7'];
             color = colors[Math.floor(Math.random() * colors.length)];
         }
+        if (!val || !val.shape) if (ruleKey !== 'shape') radius = (Math.random() > 0.5) ? '50%' : '10px';
 
-        if (rule === 'shape') radius = val;
-        else radius = (Math.random() > 0.5) ? '50%' : '10px';
+        // RE-Apply overrides to be safe (if randomized above overwrote, though logic prevents it)
+        if (ruleKey === 'eyes' && !val._multi) eyes = val;
+        // ... this logic is getting messy. Simplification:
+
+        // 1. Random Base
+        let finalEyes = 1 + Math.floor(Math.random() * 3);
+        let finalHorns = Math.floor(Math.random() * 3);
+        const colors = ['#a29bfe', '#55efc4', '#ffeaa7'];
+        let finalColor = colors[Math.floor(Math.random() * colors.length)];
+        let finalRadius = (Math.random() > 0.5) ? '50%' : '10px';
+
+        // 2. Apply Overrides
+        if (val && val._multi) {
+            if (val.eyes) finalEyes = val.eyes;
+            if (val.horns) finalHorns = val.horns;
+            if (val.color) finalColor = val.color;
+            if (val.shape) finalRadius = val.shape;
+        } else {
+            if (ruleKey === 'eyes') finalEyes = val;
+            if (ruleKey === 'horns') finalHorns = val;
+            if (ruleKey === 'color') finalColor = val;
+            if (ruleKey === 'shape') finalRadius = val;
+        }
+
+        // Apply
+        eyes = finalEyes; horns = finalHorns; color = finalColor; radius = finalRadius;
 
         // Apply Styles
         el.style.background = color;

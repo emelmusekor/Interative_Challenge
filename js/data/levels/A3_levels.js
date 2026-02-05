@@ -5,7 +5,8 @@ window.A3_LEVELS = {
         // Lvl 11-30: Larger maze, Fog of War (Radius 3). (Local Search / Reactive)
         // Lvl 31-50: Huge maze, Fog of War (Radius 2), Dynamic Obstacles?
 
-        const size = Math.min(25, 6 + Math.floor(lvl / 2)); // Max 25x25
+        let size = Math.min(17, 6 + Math.floor(lvl / 2)); // Max 17x17
+        if (size % 2 === 0) size++; // Ensure odd size for Recursive Backtracker
         const fogRadius = lvl > 10 ? (lvl > 30 ? 2 : 4) : 999;
 
         // Recursive Backtracker Maze Gen

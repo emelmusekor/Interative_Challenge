@@ -1,145 +1,105 @@
-
-// E3 - 알고리즘 규칙
-const E3_Data = {
-    type: "ALLOCATION",
-    title: "알고리즘 규칙",
-    desc: "상황(If)에 따른 행동(Then)을 정하세요.",
-    mission: "",
-    items: ["청소하기", "남아서 공부", "상받기"],
-    
-    slots: ["지각하면", "숙제 안하면"],
-    
-    answer: {"지각하면": "청소하기", "숙제 안하면": "남아서 공부"},
-    
-    
-    
-    
-    
-    
-};
-
 class TaskE3 {
     constructor() {
         this.container = document.getElementById('task-stage');
-        this.data = E3_Data;
-        this.state = {};
         this.init();
     }
-
     init() {
-        // Setup Header
-        document.getElementById('task-title').innerText = this.data.title;
-        document.getElementById('task-desc').innerText = this.data.desc;
-        if(this.data.mission) {
-            const m = document.createElement('div');
-            m.className = 'mission-box';
-            m.innerText = this.data.mission;
-            document.getElementById('task-desc').appendChild(m);
-        }
-        if(this.data.hint) {
-             const h = document.createElement('div');
-             h.className = 'hint-text';
-             h.innerText = this.data.hint;
-             this.container.appendChild(h);
-        }
-        
-        this.render();
+        this.container.innerHTML = `
+            <div style="text-align:center;">
+                <h2>🔔 이벤트 마스터 (Event)</h2>
+                <div style="margin:10px;">
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
+                    <button id="start-btn">▶️ 시작</button>
+                    <button id="help-btn">?</button>
+                </div>
+                <h3 id="instruction" style="color:#0984e3; min-height:30px;"></h3>
+            </div>
+            
+            <div id="display-area" style="width:200px; height:200px; margin:20px auto; background:#eee; border-radius:10px; display:flex; justify-content:center; align-items:center; cursor:pointer; border:5px solid #ccc;">
+                <div id="shape" style="width:100px; height:100px;"></div>
+            </div>
+            
+            <div style="text-align:center;">
+                <p id="feedback" style="font-weight:bold; height:20px;"></p>
+            </div>
+        `;
+
+        document.getElementById('start-btn').onclick = () => this.loadLevel(this.level || 1);
+        document.getElementById('help-btn').onclick = () => this.showHelp();
+        document.getElementById('display-area').onmousedown = () => this.onClick();
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
+
+        this.loadLevel(1);
     }
 
-    render() {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'alloc-wrapper';
-        
-        // Source
-        const source = document.createElement('div');
-        source.className = 'alloc-source';
-        this.data.items.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'alloc-item';
-            el.draggable = true;
-            el.innerText = item;
-            el.id = 'item-'+item;
-            el.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text', item);
-            });
-            source.appendChild(el);
-        });
-        
-        // Slots
-        const slotsDiv = document.createElement('div');
-        slotsDiv.className = 'alloc-slots';
-        this.data.slots.forEach(sName => {
-            const slot = document.createElement('div');
-            slot.className = 'alloc-slot';
-            slot.innerHTML = `<div class='slot-title'>${sName}</div>`;
-            slot.dataset.name = sName;
-            
-            slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('dragover'); });
-            slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
-            slot.addEventListener('drop', e => {
-                e.preventDefault();
-                slot.classList.remove('dragover');
-                const data = e.dataTransfer.getData('text');
-                
-                // Allow logic
-                if(!this.data.multi_alloc) {
-                    // Single item per slot? 
-                    // Remove existing if any
-                    const existing = slot.querySelector('.alloc-item');
-                    if(existing) source.appendChild(existing); 
-                }
-                
-                // Move element
-                # Find original everywhere
-                const el = document.getElementById('item-'+data);
-                if(el) slot.appendChild(el);
-                
-                this.check();
-            });
-            slotsDiv.appendChild(slot);
-        });
-        
-        wrapper.appendChild(source);
-        wrapper.appendChild(slotsDiv);
-        this.container.appendChild(wrapper);
-    }
-    
-    check() {
-        const slots = document.querySelectorAll('.alloc-slot');
-        let correct = true;
-        let set_items = 0;
-        
-        slots.forEach(s => {
-            const sName = s.dataset.name;
-            const itemEls = s.querySelectorAll('.alloc-item');
-            const items = [...itemEls].map(e => e.innerText);
-            set_items += items.length;
-            
-            const ans = this.data.answer[sName];
-            
-            if(Array.isArray(ans)) {
-                // Multi check (C2)
-                if(items.length !== ans.length) correct = false;
-                else {
-                    items.sort(); ans.sort();
-                    if(JSON.stringify(items) !== JSON.stringify(ans)) correct = false;
-                }
-            } else {
-                // Single check
-                if(items.length !== 1 || items[0] !== ans) correct = false;
-            }
-        });
-        
-        const totalItems = this.data.items.length;
-        if(set_items === totalItems && correct) this.success();
+    showHelp() {
+        alert("지시 사항에 맞는 상황이 발생했을 때만 박스를 클릭하세요!\n반응 속도가 중요합니다.");
     }
 
-    success() {
-        const msg = document.getElementById('success-msg');
-        if(msg) msg.style.display = 'block';
+    loadLevel(lvl) {
+        this.level = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
+        const data = E3_LEVELS.generate(lvl);
+        this.instruction = data.instruction;
+        this.targetColor = data.targetColor;
+        this.targetShape = data.targetShape;
+        this.conditions = data.conditions;
+
+        document.getElementById('instruction').innerText = this.instruction;
+        document.getElementById('feedback').innerText = "";
+
+        this.startGame();
+    }
+
+    startGame() {
+        this.active = true;
+        this.timer = setInterval(() => this.nextFrame(), 1000 - (this.level * 10)); // Speed up
+    }
+
+    nextFrame() {
+        if (!this.active) return;
+
+        // Randomly generate current state
+        const colors = ['red', 'green', 'blue', 'yellow'];
+        const shapes = ['circle', 'square', 'triangle'];
+
+        this.currColor = colors[Math.floor(Math.random() * colors.length)];
+        this.currShape = shapes[Math.floor(Math.random() * shapes.length)];
+
+        const el = document.getElementById('shape');
+        el.style.backgroundColor = this.currColor === 'red' ? '#ff7675' : (this.currColor === 'green' ? '#55efc4' : (this.currColor === 'blue' ? '#74b9ff' : '#ffeaa7'));
+        el.style.borderRadius = this.currShape === 'circle' ? '50%' : '0%'; // Simple shape
+
+        // Check if this was a missed target?
+        // No, user clicks. If they don't click, we continute.
+        // Wait, simple game: "Click NOW if match".
+    }
+
+    onClick() {
+        if (!this.active) return;
+
+        let match = false;
+        if (this.conditions === 1) {
+            if (this.currColor === this.targetColor) match = true;
+        } else {
+            if (this.currColor === this.targetColor && this.currShape === this.targetShape) match = true;
+        }
+
+        if (match) {
+            clearInterval(this.timer);
+            this.active = false;
+            document.getElementById('feedback').style.color = 'green';
+            document.getElementById('feedback').innerText = "성공! 이벤트 감지 완료.";
+            if (this.level < 50) setTimeout(() => this.loadLevel(this.level + 1), 1000);
+        } else {
+            document.getElementById('feedback').style.color = 'red';
+            document.getElementById('feedback').innerText = "실수! 조건이 맞지 않습니다.";
+            // Penalty? Just continue.
+        }
     }
 }
-
-window.onload = () => {
-    new TaskE3();
-};
+window.onload = () => new TaskE3();

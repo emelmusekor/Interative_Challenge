@@ -8,7 +8,7 @@ class TaskA5 {
             <div style="text-align:center;">
                 <h2>📷 베스트 포토그래퍼 (Optimization)</h2>
                 <div style="margin:10px;">
-                    Level: <span id="lvl-display">1</span>
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
                     <button id="snap-btn" style="background:#e84393; color:white; border:none; padding:5px 15px; border-radius:5px;">📸 찰칵!</button>
                     <button id="new-btn">🔄 새 장소</button>
                     <button id="help-btn">?</button>
@@ -25,15 +25,28 @@ class TaskA5 {
         this.camPos = { x: 200, y: 350 };
 
         this.canvas.onmousemove = (e) => {
+            if (this.isLocked) return;
             const rect = this.canvas.getBoundingClientRect();
             this.camPos.x = e.clientX - rect.left;
             this.camPos.y = e.clientY - rect.top;
             this.render();
         };
 
+        this.canvas.onclick = (e) => {
+            this.isLocked = !this.isLocked;
+            if (this.isLocked) {
+                // visual feedback
+                this.render();
+            }
+        };
+
         document.getElementById('snap-btn').onclick = () => this.check();
         document.getElementById('new-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('help-btn').onclick = () => this.showHelp();
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
 
         this.loadLevel(1);
     }
@@ -44,7 +57,8 @@ class TaskA5 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-display').innerText = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
         const data = A5_LEVELS.generate(lvl);
         this.stars = data.stars;
         this.walls = data.walls;

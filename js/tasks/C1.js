@@ -14,9 +14,7 @@ class TaskC1 {
         head.innerHTML = `
             <h2>📡 심해 음파 탐지 (Ocean Sonar)</h2>
             <div style="margin: 15px 0; display:flex; justify-content:center; gap:10px;">
-                <label>Level: <select id="lvl-sel" style="padding:5px; font-size:16px;">
-                    ${Array.from({ length: 50 }, (_, i) => `<option value="${i + 1}">${i + 1}</option>`).join('')}
-                </select></label>
+                <label>Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center; padding:5px; font-size:16px;"></label>
                 <button id="regen-btn" style="padding:5px 15px; background:#00cec9; border:none; border-radius:4px; color:white; cursor:pointer;">New Map</button>
                 <button id="help-btn" style="padding:5px 15px; background:#fab1a0; border:none; border-radius:4px; color:white; font-weight:bold; cursor:pointer;">?</button>
             </div>
@@ -40,7 +38,10 @@ class TaskC1 {
         this.container.appendChild(gridBox);
 
         // Events
-        document.getElementById('lvl-sel').onchange = (e) => this.loadLevel(parseInt(e.target.value));
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
         document.getElementById('regen-btn').onclick = () => this.loadLevel(this.level || 1);
         document.getElementById('help-btn').onclick = () => this.showHelp();
 
@@ -68,7 +69,8 @@ class TaskC1 {
 
     loadLevel(lvl) {
         this.level = lvl;
-        document.getElementById('lvl-sel').value = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
 
         // Data Generation
         const size = lvl < 5 ? 5 : (lvl < 10 ? 7 : (lvl < 20 ? 10 : (lvl < 40 ? 12 : 15)));

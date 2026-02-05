@@ -1,145 +1,109 @@
-
-// E2 - 업무 분담
-const E2_Data = {
-    type: "ALLOCATION",
-    title: "업무 분담",
-    desc: "특기에 맞춰 역할을 배정하세요.",
-    mission: "",
-    items: ["학생A(글씨잘씀)", "학생B(힘셈)"],
-    
-    slots: ["서기(글씨)", "체육(힘)"],
-    
-    answer: {"서기(글씨)": "학생A(글씨잘씀)", "체육(힘)": "학생B(힘셈)"},
-    
-    
-    
-    
-    
-    
-};
-
 class TaskE2 {
     constructor() {
         this.container = document.getElementById('task-stage');
-        this.data = E2_Data;
-        this.state = {};
         this.init();
     }
-
     init() {
-        // Setup Header
-        document.getElementById('task-title').innerText = this.data.title;
-        document.getElementById('task-desc').innerText = this.data.desc;
-        if(this.data.mission) {
-            const m = document.createElement('div');
-            m.className = 'mission-box';
-            m.innerText = this.data.mission;
-            document.getElementById('task-desc').appendChild(m);
-        }
-        if(this.data.hint) {
-             const h = document.createElement('div');
-             h.className = 'hint-text';
-             h.innerText = this.data.hint;
-             this.container.appendChild(h);
-        }
-        
-        this.render();
+        this.container.innerHTML = `
+            <div style="text-align:center;">
+                <h2>🎨 픽셀 아트 (Representation)</h2>
+                <div style="margin:10px;">
+                    Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
+                    <button id="new-btn">🔄 새 그림</button>
+                    <button id="help-btn">?</button>
+                </div>
+            </div>
+            
+             <div style="display:flex; justify-content:center; gap:40px; margin-top:20px;">
+                <div style="text-align:center;">
+                    <h4>목표 그림</h4>
+                     <canvas id="target-canvas" width="200" height="200" style="border:1px solid #ccc;"></canvas>
+                </div>
+                
+                <div style="text-align:center;">
+                    <h4>나의 그림 (클릭해서 그리기)</h4>
+                     <canvas id="my-canvas" width="200" height="200" style="border:1px solid #ccc; cursor:pointer;"></canvas>
+                </div>
+            </div>
+            
+            <div style="text-align:center; margin-top:20px;">
+                <button id="check-btn" style="padding:10px 30px; background:#e84393; color:white; border:none; border-radius:5px; font-size:18px; cursor:pointer;">제출하기</button>
+            </div>
+        `;
+
+        this.tCanvas = document.getElementById('target-canvas');
+        this.mCanvas = document.getElementById('my-canvas');
+        this.tCtx = this.tCanvas.getContext('2d');
+        this.mCtx = this.mCanvas.getContext('2d');
+
+        document.getElementById('new-btn').onclick = () => this.loadLevel(this.level || 1);
+        document.getElementById('help-btn').onclick = () => this.showHelp();
+        document.getElementById('check-btn').onclick = () => this.check();
+        document.getElementById('lvl-input').onchange = (e) => {
+            const val = parseInt(e.target.value);
+            if (val >= 1 && val <= 50) this.loadLevel(val);
+        };
+        this.mCanvas.onclick = (e) => this.onClick(e);
+
+        this.loadLevel(1);
     }
 
-    render() {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'alloc-wrapper';
-        
-        // Source
-        const source = document.createElement('div');
-        source.className = 'alloc-source';
-        this.data.items.forEach(item => {
-            const el = document.createElement('div');
-            el.className = 'alloc-item';
-            el.draggable = true;
-            el.innerText = item;
-            el.id = 'item-'+item;
-            el.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text', item);
-            });
-            source.appendChild(el);
-        });
-        
-        // Slots
-        const slotsDiv = document.createElement('div');
-        slotsDiv.className = 'alloc-slots';
-        this.data.slots.forEach(sName => {
-            const slot = document.createElement('div');
-            slot.className = 'alloc-slot';
-            slot.innerHTML = `<div class='slot-title'>${sName}</div>`;
-            slot.dataset.name = sName;
-            
-            slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('dragover'); });
-            slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
-            slot.addEventListener('drop', e => {
-                e.preventDefault();
-                slot.classList.remove('dragover');
-                const data = e.dataTransfer.getData('text');
-                
-                // Allow logic
-                if(!this.data.multi_alloc) {
-                    // Single item per slot? 
-                    // Remove existing if any
-                    const existing = slot.querySelector('.alloc-item');
-                    if(existing) source.appendChild(existing); 
-                }
-                
-                // Move element
-                # Find original everywhere
-                const el = document.getElementById('item-'+data);
-                if(el) slot.appendChild(el);
-                
-                this.check();
-            });
-            slotsDiv.appendChild(slot);
-        });
-        
-        wrapper.appendChild(source);
-        wrapper.appendChild(slotsDiv);
-        this.container.appendChild(wrapper);
+    showHelp() {
+        alert("왼쪽의 목표 그림과 똑같이 만드세요.\n칸을 클릭하면 검은색/흰색이 바뀝니다.\n컴퓨터 화면이 0과 1로 그림을 그리는 원리입니다.");
     }
-    
-    check() {
-        const slots = document.querySelectorAll('.alloc-slot');
-        let correct = true;
-        let set_items = 0;
-        
-        slots.forEach(s => {
-            const sName = s.dataset.name;
-            const itemEls = s.querySelectorAll('.alloc-item');
-            const items = [...itemEls].map(e => e.innerText);
-            set_items += items.length;
-            
-            const ans = this.data.answer[sName];
-            
-            if(Array.isArray(ans)) {
-                // Multi check (C2)
-                if(items.length !== ans.length) correct = false;
-                else {
-                    items.sort(); ans.sort();
-                    if(JSON.stringify(items) !== JSON.stringify(ans)) correct = false;
-                }
-            } else {
-                // Single check
-                if(items.length !== 1 || items[0] !== ans) correct = false;
+
+    loadLevel(lvl) {
+        this.level = lvl;
+        const inp = document.getElementById('lvl-input');
+        if (inp) inp.value = lvl;
+        const data = E2_LEVELS.generate(lvl);
+        this.size = data.size;
+        this.targetGrid = data.grid;
+        this.myGrid = Array(this.size * this.size).fill(0);
+
+        this.render(this.tCtx, this.targetGrid);
+        this.render(this.mCtx, this.myGrid);
+    }
+
+    render(ctx, grid) {
+        const cellSize = 200 / this.size;
+        ctx.clearRect(0, 0, 200, 200);
+
+        for (let r = 0; r < this.size; r++) {
+            for (let c = 0; c < this.size; c++) {
+                const idx = r * this.size + c;
+                ctx.fillStyle = grid[idx] ? '#2d3436' : '#fff';
+                ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+                ctx.strokeRect(c * cellSize, r * cellSize, cellSize, cellSize);
             }
-        });
-        
-        const totalItems = this.data.items.length;
-        if(set_items === totalItems && correct) this.success();
+        }
     }
 
-    success() {
-        const msg = document.getElementById('success-msg');
-        if(msg) msg.style.display = 'block';
+    onClick(e) {
+        const rect = this.mCanvas.getBoundingClientRect();
+        const cellSize = 200 / this.size;
+        const c = Math.floor((e.clientX - rect.left) / cellSize);
+        const r = Math.floor((e.clientY - rect.top) / cellSize);
+
+        const idx = r * this.size + c;
+        if (idx >= 0 && idx < this.myGrid.length) {
+            this.myGrid[idx] = 1 - this.myGrid[idx];
+            this.render(this.mCtx, this.myGrid);
+        }
+    }
+
+    check() {
+        let correct = true;
+        for (let i = 0; i < this.targetGrid.length; i++) {
+            if (this.targetGrid[i] !== this.myGrid[i]) correct = false;
+        }
+
+        if (correct) {
+            alert("완벽합니다! 픽셀 아티스트시군요.");
+            if (this.level < 50) this.loadLevel(this.level + 1);
+        } else {
+            alert("그림이 다릅니다. 다시 확인하세요.");
+        }
     }
 }
-
-window.onload = () => {
-    new TaskE2();
-};
+window.onload = () => new TaskE2();

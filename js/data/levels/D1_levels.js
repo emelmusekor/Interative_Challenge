@@ -5,8 +5,8 @@ window.D1_LEVELS = {
         // Lvl 10: 5 Nodes, Find cycle (A->B->C->A)
         // Lvl 30: 8 Nodes, Complete mapping
 
-        const count = Math.min(8, 3 + Math.floor(lvl / 5));
-        const names = ['철수', '영희', '민수', '지수', '호영', '준호', '나영', '동수'];
+        const count = Math.min(15, 3 + Math.floor(lvl / 3));
+        const names = ['철수', '영희', '민수', '지수', '호영', '준호', '나영', '동수', '미란', '경수', '혜진', '성민', '자영', '태호', '순희'];
         const people = names.slice(0, count);
 
         // Random assign (Manito: Derangement usually, but here just directed edges)
