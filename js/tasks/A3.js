@@ -64,14 +64,29 @@ class TaskA3 {
         const inp = document.getElementById('lvl-input');
         if (inp) inp.value = lvl;
         const data = A3_LEVELS.generate(lvl);
-        this.size = data.size;
+        this.size = data.size || 15; // Default fallback
         this.grid = data.grid;
         this.start = data.start;
         this.end = data.end;
-        this.fogRadius = data.fogRadius; // Ensure this is set
+        this.fogRadius = (data.fogRadius !== undefined) ? data.fogRadius : 4;
+
+        // Safety check for grid length
+        if (!this.grid || this.grid.length !== this.size * this.size) {
+            console.error("Grid size mismatch!", this.size, this.grid ? this.grid.length : "null");
+            // Regenerate or fallback? Let's just create empty room
+            this.grid = Array(this.size * this.size).fill(0);
+        }
+
         this.player = { ...this.start };
         this.cmds = [];
         this.renderCmds();
+
+        // Force clear/redraw
+        if (this.ctx) {
+            this.ctx.clearRect(0, 0, 500, 500);
+            this.ctx.fillStyle = '#000';
+            this.ctx.fillRect(0, 0, 500, 500);
+        }
         this.render();
     }
 

@@ -40,9 +40,10 @@ class TaskD2 {
         if (inp) inp.value = lvl;
         const data = D2_LEVELS.generate(lvl);
         this.root = data.root;
-        this.targetName = data.targetName;
+        this.targetName = data.targetName; // Can be String or Array
+        this.question = data.question;
 
-        document.getElementById('question-text').innerText = `'${this.targetName}'을(를) 찾아 클릭하세요!`;
+        document.getElementById('question-text').innerText = this.question;
 
         const container = document.getElementById('tree-container');
         container.innerHTML = '';
@@ -60,7 +61,7 @@ class TaskD2 {
 
         div.appendChild(box);
 
-        if (node.items.length > 0) {
+        if (node.items && node.items.length > 0) {
             const childrenDiv = document.createElement('div');
             childrenDiv.style.cssText = "display:flex; margin-top:20px; border-top:2px solid #ccc; padding-top:10px;";
             node.items.forEach(c => childrenDiv.appendChild(this.renderNode(c)));
@@ -71,11 +72,13 @@ class TaskD2 {
     }
 
     check(name) {
-        if (name === this.targetName) {
+        const isCorrect = Array.isArray(this.targetName) ? this.targetName.includes(name) : this.targetName === name;
+
+        if (isCorrect) {
             alert("정답입니다!");
             if (this.level < 50) this.loadLevel(this.level + 1);
         } else {
-            alert("찾는 사람이 아닙니다.");
+            alert("틀렸습니다. 다시 생각해보세요.");
         }
     }
 }

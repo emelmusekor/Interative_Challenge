@@ -42,6 +42,8 @@ window.A2_LEVELS = {
         }
 
         // Return rule for engine to generate aliens
-        return { rule, featureDetails };
+        const alienCount = lvl < 10 ? 3 : (lvl < 25 ? 4 : (lvl < 40 ? 5 : 6));
+
+        return { rule, featureDetails, alienCount };
     }
 };

@@ -29,11 +29,28 @@ window.C4_LEVELS = {
             if (op === 'AND') a = b1 && b2;
             else a = b1 || b2;
         } else {
-            // NOT (True OR False)
+            // Complex algebra: (A OR B) AND (NOT C)
+            // Lvl 30+: 3 variables
             const b1 = Math.random() > 0.5;
             const b2 = Math.random() > 0.5;
-            q = `NOT (${b1} OR ${b2})`;
-            a = !(b1 || b2);
+            const b3 = Math.random() > 0.5;
+
+            const op1 = Math.random() > 0.5 ? 'AND' : 'OR';
+            const op2 = Math.random() > 0.5 ? 'AND' : 'OR';
+            const neg = Math.random() > 0.7; // 30% chance for NOT C
+
+            let part1 = b1 && b2;
+            if (op1 === 'OR') part1 = b1 || b2;
+
+            let val3 = b3;
+            let str3 = `${b3}`;
+            if (neg) { val3 = !b3; str3 = `NOT ${b3}`; }
+
+            // Expression: (b1 op1 b2) op2 b3
+            q = `(${b1} ${op1} ${b2}) ${op2} ${str3}`;
+
+            if (op2 === 'AND') a = part1 && val3;
+            else a = part1 || val3;
         }
 
         return { q, a };

@@ -14,7 +14,7 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **B1** | 명령어 읽기 (Syntax Reading) | 파싱 (Parsing) | 1-50 | ✅ 활성 | 기호 순서 읽기. |
 | **B2** | 문제 쪼개기 (Decomposition) | 분해 (Decomposition) | 1-50 | 🟢 수정됨 | 다양한 시나리오 추가됨. |
-| **B3** | 흐름 만들기 (Control Flow) | 논리 게이트 / 흐름 | 1-50 | ✅ 활성 | If/Else 흐름 논리. |
+| **B3** | 4색 코드 (4-Color Code) | 모델링 (Modeling) | 1-50 | ✅ 활성 | (New) FSM 기반 상태 전이 시뮬레이터로 교체됨. |
 | **B4** | 오류 고치기 (Debugging) | 오류 수정 (Debugging) | 1-50 | 🟢 개선됨 | (Update) 텍스트 입력 -> 드래그앤드롭 블록 정렬로 개선. |
 | **B5** | 청소의 달인 (Cleaning Master) | 효율성 (Efficiency) | 1-50 | 🟢 수정됨 | 다중 로봇 배정 로직 (순환 배정). |
 
@@ -22,7 +22,7 @@
 | 코드 | 과제명 | 개념 | 레벨 범위 | 구현 상태 | 비고 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **C1** | 재료 모으기 (Data Collecting) | 수집 (Collection) | 1-50 | ✅ 활성 | 필요한 아이템 수집. |
-| **C2** | 스마트 분류기 (Smart Sorter) | 분류 (Classification) | 1-50 | 🟢 수정됨 | 게이트 상호작용 개선. |
+| **C2** | 대장 고양이 (Captain Cat) | 전처리 (Preprocessing) | 1-50 | ✅ 활성 | (New) 분류 및 위계 정렬 게임으로 교체됨. |
 | **C3** | 암호 해독 (Symbolization) | 인코딩 (Encoding) | 1-50 | ✅ 활성 | 암호/복호화 논리. |
 | **C4** | 정답 확인 (Validation) | 검증 (Verification) | 1-50 | ✅ 활성 | 규칙 준수 여부 확인. |
 | **C5** | 짐 싸기 (Compression) | 최적화 (Optimization) | 1-50 | ✅ 활성 | 데이터 축소 논리. |
@@ -43,7 +43,7 @@
 | **E2** | 역할 놀이 (Role Play) | 변수 정의 (Var Def) | 1-50 | 🟢 수정됨 | 새로운 구현 (RolePlay.js). |
 | **E3** | 이벤트 마스터 (Event Master) | 규칙 생성 (Rule Gen) | 1-50 | ✅ 활성 | 이벤트-액션 트리거. |
 | **E4** | 데이터 탐험가 (Database) | 시뮬레이션 (Simulation) | 1-50 | ✅ 활성 | 데이터 행 필터링. |
-| **E5** | 성능 높이기 (Resource Max) | 처리량 (Throughput) | 1-50 | ✅ 활성 | 자원 할당 게임. |
+| **E5** | 생과일 주스 (Fruit Juice) | 최적화 (Optimization) | 1-50 | ✅ 활성 | (New) 배치 및 스케줄링 최적화 게임으로 교체됨. |
 
 ## 전체 건전성
 - **UX 개선**: A4(패턴 찾기)와 B4(오류 고치기)에 드래그앤드롭(Drag&Drop) 기능을 도입하여 사용성을 대폭 개선했습니다.

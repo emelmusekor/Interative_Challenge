@@ -5,10 +5,10 @@ window.A1_LEVELS = {
         // Level 11-30: Working Memory (Target disappears) - Simulates Buffer
         // Level 31-50: Noisy Data (Target is pixelated or blurred) - Feature Restoration
 
-        const faces = ['round', 'square', 'oval', 'triangle', 'heart'];
-        const eyes = ['normal', 'wink', 'glasses', 'angry', 'surprised'];
-        const mouths = ['smile', 'flat', 'open', 'frown', 'tongue'];
-        const noses = ['small', 'long', 'round', 'pointed', 'flat'];
+        const faces = ['round', 'square', 'oval', 'triangle', 'heart', 'star', 'diamond'];
+        const eyes = ['normal', 'wink', 'glasses', 'angry', 'surprised', 'closed', 'teary'];
+        const mouths = ['smile', 'flat', 'open', 'frown', 'tongue', 'zipper', 'mask'];
+        const noses = ['small', 'long', 'round', 'pointed', 'flat', 'pig', 'button'];
 
         // Random target
         const target = {

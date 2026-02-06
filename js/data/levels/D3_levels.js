@@ -8,15 +8,16 @@ window.D3_LEVELS = {
         const nodes = [];
         const edges = [];
 
-        const layers = lvl < 10 ? 3 : 4;
-        const width = lvl < 10 ? 1 : (lvl < 20 ? 2 : 3);
+        const layers = lvl < 10 ? 3 : (lvl < 25 ? 4 : 5);
+        const width = lvl < 10 ? 2 : (lvl < 20 ? 3 : 4);
 
-        // Tiers: 0=Producer, 1=Herbivore, 2=Carnivore, 3=Apex
+        // Tiers: 0=Producer, 1=Herbivore, 2=Carnivore, 3=Apex, 4=Super
         const names = [
-            ['풀', '나무', '꽃'],
-            ['토끼', '사슴', '다람쥐', '메뚜기'],
-            ['여우', '늑대', '독수리', '뱀'],
-            ['호랑이', '사자', '곰']
+            ['풀', '나무', '꽃', '이끼', '선인장'],
+            ['토끼', '사슴', '다람쥐', '메뚜기', '쥐'],
+            ['여우', '늑대', '독수리', '뱀', '부엉이'],
+            ['호랑이', '사자', '곰', '표범', '악어'],
+            ['인간', '외계인', '로봇', '드래곤', '괴물'] // Tier 5
         ];
 
         // Generate Nodes
@@ -51,8 +52,11 @@ window.D3_LEVELS = {
         // Question
         const qEdge = edges[Math.floor(Math.random() * edges.length)];
         const fromNode = nodes.find(n => n.id === qEdge.from);
-        const toNode = nodes.find(n => n.id === qEdge.to);
 
-        return { nodes, edges, question: { q: `${fromNode.label}을(를) 먹는 동물은?`, a: toNode.id } };
+        // Find ALL predators of fromNode
+        // Valid answers are any node that has an edge FROM fromNode TO it.
+        const validAnswers = edges.filter(e => e.from === fromNode.id).map(e => e.to);
+
+        return { nodes, edges, question: { q: `${fromNode.label}을(를) 먹는 동물은?`, a: validAnswers } };
     }
 };

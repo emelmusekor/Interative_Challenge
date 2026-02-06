@@ -23,20 +23,55 @@ window.D2_LEVELS = {
         };
         addChildren(root, depth);
 
-        // Question: Find relationship
-        // Q: Who is parent of X?
-        // Pick a random leaf
+        // Relationship Logic
+        // Types: Parent, Child, Sibling
+        let qType = 'child';
+        if (lvl > 10) qType = 'parent';
+        if (lvl > 20) qType = Math.random() > 0.5 ? 'parent' : 'sibling';
 
-        const getLeaf = (n) => {
-            if (n.items.length === 0) return n;
-            return getLeaf(n.items[Math.floor(Math.random() * n.items.length)]);
+        // Helper
+        const getAllNodes = (n) => {
+            let list = [n];
+            n.items.forEach(c => list = list.concat(getAllNodes(c)));
+            return list;
         };
+        const allNodes = getAllNodes(root);
 
-        const target = getLeaf(root);
-        // Find parent?
-        // Let's just ask: Who is at the top? (Root) - Too easy.
-        // Q: Select X (Name).
+        // Assign Parents
+        const assignParent = (n, p) => {
+            n.parent = p;
+            n.items.forEach(c => assignParent(c, n));
+        };
+        assignParent(root, null);
 
-        return { root, targetName: target.name };
+        let subject, answerName, qText;
+
+        if (qType === 'parent') {
+            const valid = allNodes.filter(n => n.parent !== null);
+            subject = valid[Math.floor(Math.random() * valid.length)];
+            answerName = subject.parent.name;
+            qText = `${subject.name}의 **부모님**(상위 노드)은 누구인가요?`;
+        } else if (qType === 'sibling') {
+            const valid = allNodes.filter(n => n.parent && n.parent.items.length > 1);
+            if (valid.length === 0) {
+                qType = 'child';
+            } else {
+                subject = valid[Math.floor(Math.random() * valid.length)];
+                const siblings = subject.parent.items.filter(x => x.id !== subject.id);
+                // Any sibling is valid
+                answerName = siblings.map(s => s.name);
+                qText = `${subject.name}의 **형제/자매**를 찾으세요.`;
+            }
+        }
+
+        if (qType === 'child') {
+            const valid = allNodes.filter(n => n.items.length > 0);
+            subject = valid[Math.floor(Math.random() * valid.length)];
+            // Any child is valid
+            answerName = subject.items.map(c => c.name);
+            qText = `${subject.name}의 **자식**(하위 노드)을 찾으세요.`;
+        }
+
+        return { root, targetName: answerName, question: qText };
     }
 };

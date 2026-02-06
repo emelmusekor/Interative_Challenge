@@ -26,6 +26,21 @@ window.D1_LEVELS = {
             });
         }
 
-        return { people, edges };
+        // Generate Question with Hops
+        const hops = lvl < 10 ? 1 : (lvl < 20 ? 2 : 3);
+        const recipient = shuffled[Math.floor(Math.random() * count)];
+
+        let current = recipient;
+        for (let h = 0; h < hops; h++) {
+            const edge = edges.find(e => e.to === current);
+            if (edge) current = edge.from;
+        }
+        const sender = current;
+
+        let qText = `${recipient}에게 선물을 주는 사람은?`;
+        if (hops === 2) qText = `${recipient}의 마니또의 마니또는? (2단계 건너서 주는 사람)`;
+        if (hops === 3) qText = `${recipient}에게 3단계를 거쳐 선물을 주는 사람은?`;
+
+        return { people, edges, question: { q: qText, a: sender } };
     }
 };

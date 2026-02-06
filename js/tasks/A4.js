@@ -63,18 +63,32 @@ class TaskA4 {
             card.innerHTML = item.pattern;
             // Random positions if not set? Or grid?
             // Let's use slight random scatter on grid for "Scanning" feel.
-            const row = Math.floor(i / 4);
-            const col = i % 4;
-            const top = row * 100 + 20 + (Math.random() * 20 - 10);
-            const left = col * 120 + 50 + (Math.random() * 20 - 10);
+            const total = this.items.length;
+            // Config grid based on count
+            let cols = 4;
+            if (total > 16) cols = 6;
+            if (total > 24) cols = 8;
+
+            const cardW = (total > 24) ? 60 : 80;
+            const cardH = (total > 24) ? 80 : 100;
+            const gapX = (total > 24) ? 70 : 120;
+            const gapY = (total > 24) ? 90 : 110;
+            const fontSize = (total > 24) ? '30px' : '40px';
+
+            const row = Math.floor(i / cols);
+            const col = i % cols;
+
+            // Layout centering
+            const top = row * gapY + 20 + (Math.random() * 10 - 5);
+            const left = col * gapX + 20 + (Math.random() * 10 - 5);
 
             card.style.cssText = `
                 position:absolute; 
                 top:${top}px; left:${left}px; 
-                width:80px; height:100px; 
+                width:${cardW}px; height:${cardH}px; 
                 background:white; 
                 display:flex; justify-content:center; align-items:center; 
-                font-size:40px; 
+                font-size:${fontSize}; 
                 border-radius:10px; 
                 box-shadow:2px 2px 5px rgba(0,0,0,0.1); 
                 cursor:grab; 

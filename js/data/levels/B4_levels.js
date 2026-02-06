@@ -1,46 +1,55 @@
 window.B4_LEVELS = {
     generate: function (lvl) {
         // Domain: Logic AI(B) -> Debugging/Sequencing
-        // Task: Reorder code blocks to make logical sense.
+        // Task: Reorder items to make logical sense (Sorting).
+        // Lvl 1-10: Small numbers (1-10)
+        // Lvl 11-30: Large numbers or Negative
+        // Lvl 31-50: Alphabet or Mixed or Logic Statements? -> Stick to Sorting for infinite scaling.
 
-        const sequences = [
-            {
-                // Making Ramen
-                blocks: ["물 끓이기", "면 넣기", "스프 넣기", "3분 기다리기", "먹기"],
-                hint: "라면을 끓이는 순서를 생각해보세요."
-            },
-            {
-                // Planting
-                blocks: ["땅 파기", "씨앗 심기", "물 주기", "햇볕 쬐기", "꽃 피우기"],
-                hint: "식물이 자라는 과정을 생각해보세요."
-            },
-            {
-                // Coding simple loop
-                blocks: ["i = 0", "while (i < 5)", "print(i)", "i = i + 1", "End Loop"],
-                hint: "반복문의 실행 순서를 생각해보세요."
-            },
-            {
-                // Morning Routine
-                blocks: ["일어나기", "세수하기", "옷 입기", "가방 챙기기", "학교 가기"],
-                hint: "아침에 학교 갈 때까지의 순서입니다."
+        const count = Math.min(10, 3 + Math.floor(lvl / 5)); // 3 to 10 items
+        let items = [];
+        let hint = "";
+
+        const type = lvl < 20 ? 'number' : 'alphabet';
+
+        if (type === 'number') {
+            const range = lvl < 10 ? 20 : 100;
+            const useNegative = lvl > 15;
+
+            while (items.length < count) {
+                let n = Math.floor(Math.random() * range);
+                if (useNegative && Math.random() > 0.7) n = -n;
+                if (!items.includes(n)) items.push(n);
             }
-        ];
+            hint = "작은 수부터 큰 수 순서로 나열하세요.";
+        } else {
+            // Alphabet
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            while (items.length < count) {
+                const c = chars[Math.floor(Math.random() * chars.length)];
+                if (!items.includes(c)) items.push(c);
+            }
+            hint = "알파벳 순서(A->Z)로 나열하세요.";
+        }
 
-        // Pick one based on level (cyclic)
-        const data = sequences[(lvl - 1) % sequences.length];
+        // Correct order (Sorted)
+        // Note: Sort behavior for numbers needs helper
+        const correct = [...items].sort((a, b) => {
+            if (typeof a === 'number') return a - b;
+            return a.localeCompare(b);
+        });
 
-        // Create shuffled array
-        let shuffled = [...data.blocks];
+        // Shuffle for display
+        let shuffled = [...items];
         for (let i = shuffled.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
 
-        // Return both Correct Order (for checking) and Shuffled (for display)
         return {
-            correct: data.blocks,
+            correct: correct, // Array of values
             shuffled: shuffled,
-            hint: data.hint
+            hint: hint
         };
     }
 };

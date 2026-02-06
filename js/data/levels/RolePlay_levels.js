@@ -38,6 +38,20 @@ window.ROLEPLAY_LEVELS = {
                 roles: ["기획자", "디자이너", "개발자", "테스터"],
                 distractors: ["배관공", "운전기사"],
                 slots: 4
+            },
+            {
+                title: "우주 정거장 (Space Station)",
+                desc: "우주 임무를 수행하기 위해 필요한 역할을 고르세요.",
+                roles: ["선장", "비행 조종사", "통신관", "과학자"],
+                distractors: ["택시 기사", "농부", "어부", "잠수부"],
+                slots: 4
+            },
+            {
+                title: "남극 기지 (Antarctic Base)",
+                desc: "기지 운영을 위해 필요한 역할을 고르세요.",
+                roles: ["대장", "의사", "요리사", "기계 설비사", "통신 담당"],
+                distractors: ["수영 강사", "백화점 직원", "버스 기사"],
+                slots: 5
             }
         ];
 

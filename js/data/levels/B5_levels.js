@@ -6,15 +6,19 @@ window.B5_LEVELS = {
         // Lvl 30: 10 Tasks, 3 Workers (Uneven loads)
 
         const tasks = [];
-        const taskCount = 3 + Math.floor(lvl / 5);
+        const taskCount = Math.min(20, 3 + Math.floor(lvl / 2)); // Up to 20 tasks
+
+        // Task costs increase with level
+        const maxCost = 5 + Math.floor(lvl / 10);
 
         for (let i = 0; i < taskCount; i++) {
             tasks.push({
-                cost: Math.floor(Math.random() * 5) + 1 // Time cost 1-5
+                cost: Math.floor(Math.random() * maxCost) + 1,
+                id: i
             });
         }
 
-        const workers = 2 + Math.floor(lvl / 10);
+        const workers = Math.min(5, 2 + Math.floor(lvl / 15)); // Up to 5 workers
 
         return { tasks, workers };
     }

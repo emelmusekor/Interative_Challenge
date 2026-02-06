@@ -6,26 +6,34 @@ class TaskE1 {
     init() {
         this.container.innerHTML = `
             <div style="text-align:center;">
-                <h2>💡 비트 켜기 (Binary)</h2>
+                <h2>🌦️ 오늘의 날씨 캐스터 (Environment Variable)</h2>
                 <div style="margin:10px;">
                     Level: <input type="number" id="lvl-input" min="1" max="50" value="1" style="width:50px; text-align:center;">
-                    <button id="new-btn">🔄 새 숫자</button>
+                    <button id="new-btn">🔄 새로운 날씨</button>
                     <button id="help-btn">?</button>
                 </div>
             </div>
             
+            <div style="display:flex; justify-content:center; gap:30px; margin-top:30px; align-items:center;">
+                <div style="text-align:center; padding:20px; border:2px solid #74b9ff; border-radius:15px; background:#f0f8ff;">
+                    <h3>현재 환경 (Environment)</h3>
+                    <div id="env-display" style="font-size:18px; line-height:2;">
+                        <!-- Env vars go here -->
+                    </div>
+                </div>
+                
+                <div style="font-size:30px;">➡️</div>
+                
+                <div style="text-align:center; padding:20px; border:2px dashed #0984e3; border-radius:15px;">
+                    <h3>준비물 챙기기</h3>
+                    <div id="items-container" style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; max-width:300px;">
+                        <!-- Items -->
+                    </div>
+                </div>
+            </div>
+
             <div style="text-align:center; margin-top:30px;">
-                <div style="font-size:20px; margin-bottom:10px;">목표 숫자</div>
-                <div id="target-num" style="font-size:60px; font-weight:bold; color:#0984e3;">0</div>
-            </div>
-            
-            <div id="bulb-container" style="display:flex; justify-content:center; gap:10px; margin-top:30px; flex-wrap:wrap;">
-                <!-- Bulbs -->
-            </div>
-            
-            <div style="text-align:center; margin-top:20px;">
-                <h3>현재 값: <span id="current-val" style="color:#e17055;">0</span></h3>
-                <button id="check-btn" style="padding:10px 30px; background:#00cec9; color:white; border:none; border-radius:5px; font-size:18px; margin-top:20px; cursor:pointer;">확인</button>
+                <button id="check-btn" style="padding:10px 40px; background:#00cec9; color:white; border:none; border-radius:5px; font-size:18px; cursor:pointer;">방송 하기</button>
             </div>
         `;
 
@@ -41,75 +49,90 @@ class TaskE1 {
     }
 
     showHelp() {
-        alert("전구 아래의 숫자를 보세요.\n전구를 켜면 그 숫자가 더해집니다.\n목표 숫자를 만드세요!");
+        alert("오늘의 날씨(환경 변수)를 보고 적절한 준비물을 선택하세요!\n비가 오면 우산, 추우면 패딩이 필요합니다.");
     }
 
     loadLevel(lvl) {
         this.level = lvl;
         const inp = document.getElementById('lvl-input');
         if (inp) inp.value = lvl;
+
         const data = E1_LEVELS.generate(lvl);
-        this.bits = data.bits;
-        this.target = data.target;
-        this.state = Array(this.bits).fill(0);
+        this.env = data.env;
+        this.correctItems = data.correctItems;
+        this.options = data.options;
+        this.selected = new Set();
 
-        document.getElementById('target-num').innerText = this.target;
-        this.renderBulbs();
-        this.updateVal();
-    }
+        // Render Env
+        const envDiv = document.getElementById('env-display');
+        envDiv.innerHTML = `
+            <div>하늘: <b>${this.env.sky}</b></div>
+            <div>기온: <b>${this.env.temp}</b></div>
+            <div>바람: <b>${this.env.wind}</b></div>
+        `;
 
-    renderBulbs() {
-        const c = document.getElementById('bulb-container');
-        c.innerHTML = '';
-
-        // Render from MSB to LSB (Left to Right) ? usually. 
-        // Or LSB rightmost.
-        // Let's do Standard: 8 4 2 1
-
-        for (let i = this.bits - 1; i >= 0; i--) {
-            const val = Math.pow(2, i);
-            const wrapper = document.createElement('div');
-            wrapper.style.textAlign = 'center';
-
-            const bulb = document.createElement('div');
-            bulb.id = `bulb-${i}`;
-            bulb.style.cssText = "width:60px; height:80px; background:#b2bec3; border-radius:30px 30px 10px 10px; margin:0 auto; cursor:pointer; transition:background 0.2s;";
-            bulb.onclick = () => this.toggle(i);
-
-            const label = document.createElement('div');
-            label.innerText = val;
-            label.style.fontSize = '18px';
-            label.style.fontWeight = 'bold';
-
-            wrapper.appendChild(bulb);
-            wrapper.appendChild(label);
-            c.appendChild(wrapper);
-        }
-    }
-
-    toggle(idx) {
-        this.state[idx] = 1 - this.state[idx];
-        const el = document.getElementById(`bulb-${idx}`);
-        el.style.background = this.state[idx] ? '#f1c40f' : '#b2bec3';
-        el.style.boxShadow = this.state[idx] ? '0 0 20px #f1c40f' : 'none';
-        this.updateVal();
-    }
-
-    updateVal() {
-        let val = 0;
-        for (let i = 0; i < this.bits; i++) {
-            if (this.state[i]) val += Math.pow(2, i);
-        }
-        document.getElementById('current-val').innerText = val;
-        this.currentVal = val;
+        // Render Options
+        const itemDiv = document.getElementById('items-container');
+        itemDiv.innerHTML = '';
+        this.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.innerText = opt;
+            btn.style.cssText = "padding:10px; border:1px solid #ccc; background:white; cursor:pointer; border-radius:5px;";
+            btn.onclick = () => {
+                if (this.selected.has(opt)) {
+                    this.selected.delete(opt);
+                    btn.style.background = 'white';
+                    btn.style.color = 'black';
+                } else {
+                    this.selected.add(opt);
+                    btn.style.background = '#0984e3';
+                    btn.style.color = 'white';
+                }
+            };
+            itemDiv.appendChild(btn);
+        });
     }
 
     check() {
-        if (this.currentVal === this.target) {
-            alert("정답! 이진수의 원리를 이해했군요.");
+        // Logic: Should select ALL strictly required items?
+        // Or AT LEAST one suitable item?
+        // Let's go with: "You must choose at least one valid item, and NO invalid items."
+        // Or "Match the recommended list exactly?" - That's hard to guess.
+        // Let's be lenient: Input Valid if User selection is a SUBSET of Correct Items AND size > 0.
+        // Or simpler: Correct Items list from generator contains ALL acceptable items. User must pick at least one, and not pick any 'bad' items.
+        // Bad items logic needed?
+        // Let's assume generator returns "Necessary" items.
+        // Wait, generator logic: `if (sky==='비') correctItems.push('우산', '레인부츠');`.
+        // If it rains, Umbrella OR Rainboots is ok? Or Both?
+        // Let's require ONE of the correct items to be present, and NO items that are clearly wrong? 
+        // Simplest: Check if the user selected item is in the correctItems list.
+
+        if (this.selected.size === 0) {
+            alert("준비물을 하나 이상 선택하세요.");
+            return;
+        }
+
+        let allCorrect = true;
+        let atLeastOne = false;
+
+        // Check if selected items are valid
+        for (let item of this.selected) {
+            if (this.correctItems.includes(item)) {
+                atLeastOne = true;
+            } else {
+                // If user picked 'Swimsuit' on a rainy day?
+                // Generator doesn't explicity list 'forbidden'.
+                // Assuming correctItems contains EVERYTHING suitable.
+                // So if not in correctItems, it's wrong.
+                allCorrect = false;
+            }
+        }
+
+        if (allCorrect && atLeastOne) {
+            alert(`성공! ${this.env.sky} 날씨에 딱 맞는 준비물입니다.`);
             if (this.level < 50) this.loadLevel(this.level + 1);
         } else {
-            alert("숫자가 일치하지 않습니다.");
+            alert("음... 날씨에 맞지 않는 물건이 있거나, 필요한게 빠졌나요?");
         }
     }
 }

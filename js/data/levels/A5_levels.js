@@ -6,11 +6,6 @@ window.A5_LEVELS = {
         const starCount = Math.min(20, 5 + Math.floor(lvl / 2));
         const wallCount = Math.min(10, 3 + Math.floor(lvl / 2));
 
-        const stars = [];
-        for (let i = 0; i < starCount; i++) {
-            stars.push({ x: Math.random() * 300 + 50, y: Math.random() * 300 + 50 });
-        }
-
         const walls = [];
         for (let i = 0; i < wallCount; i++) {
             walls.push({
@@ -21,6 +16,23 @@ window.A5_LEVELS = {
             });
         }
 
-        return { stars, walls, threshold: 0.7 }; // Aim for 70% visibility
+        // Generate stars avoiding walls
+        const stars = [];
+        let attempts = 0;
+        while (stars.length < starCount && attempts < 1000) {
+            attempts++;
+            const s = { x: Math.random() * 340 + 30, y: Math.random() * 340 + 30 };
+
+            // Check collision with walls
+            let hit = false;
+            for (let w of walls) {
+                if (s.x >= w.x && s.x <= w.x + w.w && s.y >= w.y && s.y <= w.y + w.h) {
+                    hit = true; break;
+                }
+            }
+            if (!hit) stars.push(s);
+        }
+
+        return { stars, walls, threshold: 0.6 }; // Lower threshold slightly for safety
     }
 };

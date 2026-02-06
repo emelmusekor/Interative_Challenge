@@ -1,44 +1,49 @@
 window.B2_LEVELS = {
     generate: function (lvl) {
-        // Informatics: Decomposition (Divide & Conquer)
-        // Scenarios vary by level
+        // Informatics: Decomposition (Categorization)
+        // Level 1: 1 Category, pick valid items (e.g. "School Stuff" vs "Toys")
+        // Level 10: 2 Categories (e.g. "Mammals" vs "Reptiles")
+        // Level 30: 3 Categories
 
-        const scenarios = [
-            { title: "라면 끓이기", steps: ["물 끓이기", "면 넣기", "스프 넣기", "계란 넣기"] },
-            { title: "로봇 조립", steps: ["팔 조립", "다리 조립", "몸통 연결", "머리 부착"] },
-            { title: "소풍 준비", steps: ["도시락 싸기", "돗자리 챙기기", "교통편 확인"] },
-            { title: "앱 개발", steps: ["기획서 작성", "디자인", "코딩", "테스트"] },
-            { title: "집 청소", steps: ["환기 하기", "먼지 털기", "청소기 돌리기", "걸레질"] }
-        ];
-
-        const theme = scenarios[(lvl - 1) % scenarios.length];
-        const depth = Math.min(3, 1 + Math.floor(lvl / 5)); // Depth changes every 5 levels
-        const branching = Math.min(4, 2 + Math.floor(lvl / 10));
-
-        let idCount = 0;
-
-        // Simplified generation with meaningful labels
-        const makeNode = (d, label) => {
-            const node = { id: idCount++, label: label, children: [], checked: false };
-            if (d > 0) {
-                // If leaf logic: use sub-steps if available, else generic
-                const count = (d === 1 && theme.steps.length) ? Math.min(branching, theme.steps.length) : branching;
-
-                for (let i = 0; i < count; i++) {
-                    let subLabel;
-                    if (d === 1 && i < theme.steps.length) {
-                        subLabel = theme.steps[i];
-                    } else {
-                        subLabel = `세부 단계 ${i + 1}`;
-                    }
-                    node.children.push(makeNode(d - 1, subLabel));
-                }
-            }
-            return node;
+        const categories = {
+            'school': { label: '학교 준비물', items: ['연필', '지우개', '공책', '가방', '필통'] },
+            'kitchen': { label: '주방 도구', items: ['냄비', '후라이팬', '국자', '칼', '도마'] },
+            'zoo': { label: '동물원', items: ['사자', '호랑이', '기린', '코끼리', '원숭이'] },
+            'farm': { label: '농장', items: ['닭', '돼지', '소', '양', '말'] },
+            'fruit': { label: '과일', items: ['사과', '바나나', '포도', '수박', '딸기'] },
+            'electronics': { label: '가전제품', items: ['TV', '냉장고', '세탁기', '컴퓨터', '에어컨'] }
         };
 
-        const root = makeNode(depth, theme.title);
+        const keys = Object.keys(categories);
+        // Randomly pick 2 categories (or 3 for high levels)
+        const catCount = lvl < 20 ? 2 : 3;
+        const selectedKeys = [];
+        while (selectedKeys.length < catCount) {
+            const k = keys[Math.floor(Math.random() * keys.length)];
+            if (!selectedKeys.includes(k)) selectedKeys.push(k);
+        }
 
-        return { root };
+        const buckets = selectedKeys.map(k => ({ id: k, label: categories[k].label }));
+
+        // Generate items
+        let items = [];
+        selectedKeys.forEach(k => {
+            const list = categories[k].items;
+            list.forEach(item => {
+                items.push({ text: item, category: k, id: Math.random().toString(36).substr(2, 9) });
+            });
+        });
+
+        // Add some "Trash" items for difficulty? (Optional)
+        // For now, simple categorization. sort all items into buckets.
+
+        // Shuffle items
+        items.sort(() => Math.random() - 0.5);
+
+        // Limit item count
+        const maxItems = 5 + Math.floor(lvl / 2);
+        items = items.slice(0, maxItems);
+
+        return { buckets, items };
     }
 };

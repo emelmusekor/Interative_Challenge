@@ -43,10 +43,15 @@ class TaskE3 {
         this.level = lvl;
         const inp = document.getElementById('lvl-input');
         if (inp) inp.value = lvl;
+        if (!window.E3_LEVELS) {
+            console.error("E3_LEVELS not found");
+            return;
+        }
         const data = E3_LEVELS.generate(lvl);
         this.instruction = data.instruction;
         this.targetColor = data.targetColor;
         this.targetShape = data.targetShape;
+        this.targetSize = data.targetSize; // NEW
         this.conditions = data.conditions;
 
         document.getElementById('instruction').innerText = this.instruction;
@@ -66,17 +71,20 @@ class TaskE3 {
         // Randomly generate current state
         const colors = ['red', 'green', 'blue', 'yellow'];
         const shapes = ['circle', 'square', 'triangle'];
+        const sizes = ['big', 'small'];
 
         this.currColor = colors[Math.floor(Math.random() * colors.length)];
         this.currShape = shapes[Math.floor(Math.random() * shapes.length)];
+        this.currSize = sizes[Math.floor(Math.random() * sizes.length)]; // NEW
 
         const el = document.getElementById('shape');
         el.style.backgroundColor = this.currColor === 'red' ? '#ff7675' : (this.currColor === 'green' ? '#55efc4' : (this.currColor === 'blue' ? '#74b9ff' : '#ffeaa7'));
-        el.style.borderRadius = this.currShape === 'circle' ? '50%' : '0%'; // Simple shape
+        el.style.borderRadius = this.currShape === 'circle' ? '50%' : '0%';
 
-        // Check if this was a missed target?
-        // No, user clicks. If they don't click, we continute.
-        // Wait, simple game: "Click NOW if match".
+        // Size rendering
+        const sizeVal = this.currSize === 'big' ? '120px' : '80px';
+        el.style.width = sizeVal;
+        el.style.height = sizeVal;
     }
 
     onClick() {
@@ -85,8 +93,13 @@ class TaskE3 {
         let match = false;
         if (this.conditions === 1) {
             if (this.currColor === this.targetColor) match = true;
-        } else {
+        } else if (this.conditions === 2) {
             if (this.currColor === this.targetColor && this.currShape === this.targetShape) match = true;
+        } else {
+            // 3 conditions
+            if (this.currColor === this.targetColor &&
+                this.currShape === this.targetShape &&
+                this.currSize === this.targetSize) match = true;
         }
 
         if (match) {

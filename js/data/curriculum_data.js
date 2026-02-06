@@ -137,7 +137,7 @@ const curriculumData = {
             "title": "스마트 리사이클 AI (Smart Sorter)",
             "desc": "여러 갈래의 컨베이어 벨트에 논리 게이트(Logic Gate)를 설치하여, 쓰레기가 재질에 따라 올바른 통으로 떨어지도록 설계합니다."
         },
-        "gameLink": "task_smart_sorter.html"
+        "gameLink": "task_captain_cat.html"
     },
     "D2": {
         "id": "D2",
@@ -205,7 +205,7 @@ const curriculumData = {
             "title": "기차 선로 관리자 (Train Master)",
             "desc": "기차가 충돌하지 않고 색깔에 맞는 역으로 가도록 선로 스위치의 방향 규칙(Rule)을 설계합니다."
         },
-        "gameLink": "task_train_master.html"
+        "gameLink": "task_4color_code.html"
     },
     "C3": {
         "id": "C3",
@@ -337,7 +337,7 @@ const curriculumData = {
             "title": "만약에? 극장",
             "desc": "'만약 쓰레기를 아무때나 버린다면?' 처럼 특정 행동의 결과를 역할극으로 표현하며 미래를 체험해봅니다."
         },
-        "gameLink": "task_if_theatre.html"
+        "gameLink": "task_database.html"
     },
 
     // ==================================================================================
@@ -421,6 +421,6 @@ const curriculumData = {
             "title": "이어달리기 전략 회의",
             "desc": "우리 팀이 이어달리기에서 이기기 위해 누가 어디서 뛰고, 바통을 어떻게 넘겨줄지 작전을 짭니다."
         },
-        "gameLink": "task_relay.html"
+        "gameLink": "task_fruit_juice.html"
     }
 };

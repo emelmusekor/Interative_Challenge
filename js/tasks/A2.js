@@ -55,6 +55,7 @@ class TaskA2 {
         const data = A2_LEVELS.generate(lvl);
         this.rule = data.rule.key;
         this.ruleData = data.rule; // Store full rule object
+        this.alienCount = data.alienCount || 3;
         this.featureDetails = data.featureDetails;
 
         this.renderGame();
@@ -92,7 +93,7 @@ class TaskA2 {
             aliensDiv.style.gap = '10px';
             aliensDiv.style.justifyContent = 'center';
 
-            for (let i = 0; i < 3; i++) {
+            for (let i = 0; i < this.alienCount; i++) {
                 const alien = this.createAlien(this.rule, config[grp]);
                 aliensDiv.appendChild(alien);
             }

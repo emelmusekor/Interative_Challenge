@@ -44,7 +44,9 @@ class TaskC2 {
         document.getElementById('start-btn').innerText = "START";
 
         this.score = 0;
-        this.goal = 5 + lvl;
+        const data = C2_LEVELS.generate(lvl);
+        this.goal = data.goal;
+        this.ruleType = data.ruleType;
 
         // Entites
         this.packets = [];
@@ -54,12 +56,23 @@ class TaskC2 {
             { x: 450, y: 250, dir: -1 }
         ];
 
-        this.bins = [
-            { x: 75, y: 360, color: '#ff7675', type: 0 },
-            { x: 225, y: 360, color: '#74b9ff', type: 1 },
-            { x: 375, y: 360, color: '#55efc4', type: 2 },
-            { x: 525, y: 360, color: '#ffeaa7', type: 3 }
-        ];
+        // Map data.bins to physical locations
+        // Physical spots: x=75, 225, 375, 525
+        const locs = [75, 225, 375, 525];
+        this.bins = [];
+
+        // If we have fewer logic bins than phys slots, repeat them?
+        // E.g. 2 bins -> [Bin0, Bin0, Bin1, Bin1] logic to keep layout full
+        for (let i = 0; i < 4; i++) {
+            let logicBin = data.bins[i % data.bins.length];
+            this.bins.push({
+                x: locs[i],
+                y: 360,
+                color: logicBin.color,
+                shape: logicBin.shape,
+                id: logicBin.id // The logic ID (0..3 or 0..1)
+            });
+        }
 
         this.draw();
     }
@@ -75,10 +88,16 @@ class TaskC2 {
 
         // Spawn
         if (Math.random() < 0.02 + (this.level * 0.001)) {
+            // Pick a random target bin
+            const targetBin = this.bins[Math.floor(Math.random() * this.bins.length)];
+
             this.packets.push({
                 x: 300, y: 0,
-                vx: 0, vy: 2 + (this.level * 0.1),
-                type: Math.floor(Math.random() * 4),
+                vx: 0,
+                vy: 2 + (this.level * 0.1),
+                targetId: targetBin.id, // The logic type we want
+                color: targetBin.color,
+                shape: targetBin.shape,
                 active: true
             });
         }
@@ -91,8 +110,22 @@ class TaskC2 {
 
             // Gate Logic
             this.gates.forEach(g => {
+                // Determine if close enough to hit
+                // Y=120 (Top), Y=250 (Mid)
                 if (Math.abs(p.y - g.y) < 5 && Math.abs(p.x - g.x) < 10) {
-                    p.vx = g.dir * 2; // Deflect
+                    // PHYSICS FIX:
+                    // Dy = 130 (120->250) or 110 (250->360)
+                    // Dx = 150 (300->150/450) or 75 (150->75/225)
+
+                    // We need to calculate ratio. 
+                    // Top gate: Dy=130, Dx=150. Ratio = 1.1538
+                    // Bottom gate: Dy=110, Dx=75. Ratio = 0.6818
+
+                    let ratio = 0;
+                    if (g.y < 200) ratio = 150 / 130;
+                    else ratio = 75 / 110;
+
+                    p.vx = g.dir * p.vy * ratio;
                 }
             });
 
@@ -102,7 +135,14 @@ class TaskC2 {
                 let caught = false;
                 this.bins.forEach(b => {
                     if (Math.abs(p.x - b.x) < 30) {
-                        if (b.type === p.type) this.score++;
+                        // Check match: p.targetId === b.id
+                        // Wait, p was spawned with properties matching a targetBin.
+                        // But does it match THIS bin? 
+                        // Logic: Does this bin match p's properties according to Rule?
+                        // BUT Level gen simplified it: p matches targetBin.id.
+                        // If b.id matches p.targetId, we are good.
+
+                        if (b.id === p.targetId) this.score++;
                         else this.score--; // Penalty
                         caught = true;
                     }
@@ -142,15 +182,41 @@ class TaskC2 {
 
         // Bins
         this.bins.forEach(b => {
+            // Check Rule type to decide what to show?
+            // Always show Color and Shape hint
             ctx.fillStyle = b.color;
             ctx.fillRect(b.x - 30, b.y, 60, 40);
+
+            // Draw Shape Icon on Bin
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath();
+            const cx = b.x, cy = b.y + 20;
+            if (b.shape === 0) ctx.arc(cx, cy, 10, 0, Math.PI * 2); // Circle
+            else if (b.shape === 1) ctx.rect(cx - 10, cy - 10, 20, 20); // Square
+            else if (b.shape === 2) { // Triangle
+                ctx.moveTo(cx, cy - 10); ctx.lineTo(cx + 10, cy + 10); ctx.lineTo(cx - 10, cy + 10);
+            }
+            else if (b.shape === 3) { // Star (Diamond actually)
+                ctx.moveTo(cx, cy - 12); ctx.lineTo(cx + 12, cy); ctx.lineTo(cx, cy + 12); ctx.lineTo(cx - 12, cy);
+            }
+            ctx.fill();
         });
 
         // Packets
         this.packets.forEach(p => {
             if (!p.active) return;
-            ctx.fillStyle = this.bins[p.type].color;
-            ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+
+            if (p.shape === 0) ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+            else if (p.shape === 1) ctx.rect(p.x - 8, p.y - 8, 16, 16);
+            else if (p.shape === 2) {
+                ctx.moveTo(p.x, p.y - 8); ctx.lineTo(p.x + 8, p.y + 8); ctx.lineTo(p.x - 8, p.y + 8);
+            }
+            else if (p.shape === 3) {
+                ctx.moveTo(p.x, p.y - 10); ctx.lineTo(p.x + 10, p.y); ctx.lineTo(p.x, p.y + 10); ctx.lineTo(p.x - 10, p.y);
+            }
+            ctx.fill();
         });
 
         // Score

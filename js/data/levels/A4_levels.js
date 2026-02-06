@@ -3,7 +3,7 @@ window.A4_LEVELS = {
         // Domain: Vision AI(A) -> Classification(2) / Pattern Matching
         // Task: Drag & Drop matching patterns.
 
-        const cardCount = Math.min(16, 2 + Math.floor(lvl / 3) * 2); // 2, 4, ... 16
+        const cardCount = Math.min(36, 4 + Math.floor(lvl / 2) * 2); // 4 to 36 cards
         const patterns = ['★', '●', '▲', '■', '♥', '♦', '♣', '♠', '☀', '☁'];
 
         // Select subset

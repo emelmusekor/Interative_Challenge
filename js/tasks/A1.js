@@ -63,7 +63,15 @@ class TaskA1 {
         this.level = lvl;
         const inp = document.getElementById('lvl-input');
         if (inp) inp.value = lvl;
+        if (!window.A1_LEVELS) {
+            console.error("A1_LEVELS not found");
+            return;
+        }
         const data = A1_LEVELS.generate(lvl);
+        if (!data || !data.options) {
+            console.error("Invalid level data for A1");
+            return;
+        }
         this.target = data.target;
         this.options = data.options;
 

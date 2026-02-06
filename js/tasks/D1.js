@@ -47,10 +47,7 @@ class TaskD1 {
         this.people = data.people;
         this.edges = data.edges;
 
-        // Generate Question
-        // Q: Who gives to X?
-        const targetEdge = this.edges[Math.floor(Math.random() * this.edges.length)];
-        this.question = { q: `${targetEdge.to}의 마니또(선물 주는 사람)는?`, a: targetEdge.from };
+        this.question = data.question;
 
         document.getElementById('question-text').innerText = this.question.q;
 

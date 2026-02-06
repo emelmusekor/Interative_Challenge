@@ -51,13 +51,27 @@ class TaskE5 {
         this.level = lvl;
         const inp = document.getElementById('lvl-input');
         if (inp) inp.value = lvl;
-        const data = E5_LEVELS.generate(lvl);
-        this.training = data.training;
-        this.test = data.test;
-        this.answer = data.answer;
 
-        this.renderTraining();
-        this.renderTest();
+        try {
+            if (typeof E5_LEVELS === 'undefined') {
+                throw new Error("Level generator not found");
+            }
+
+            const data = E5_LEVELS.generate(lvl);
+            if (!data || !data.training) {
+                throw new Error("No training data generated");
+            }
+
+            this.training = data.training;
+            this.test = data.test;
+            this.answer = data.answer;
+
+            this.renderTraining();
+            this.renderTest();
+        } catch (e) {
+            console.error(e);
+            alert("레벨 데이터 생성 오류: " + e.message);
+        }
     }
 
     createItemEl(item, showLabel = false) {

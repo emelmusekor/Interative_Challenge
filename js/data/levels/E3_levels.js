@@ -5,18 +5,25 @@ window.E3_LEVELS = {
         // Lvl 10: Logic (Click when Red AND Circle)
 
         // Let's do a sequence of events to react to.
-        const conditions = lvl < 10 ? 1 : 2;
+        const conditions = lvl < 10 ? 1 : (lvl < 25 ? 2 : 3);
 
         let targetColor = Math.random() > 0.5 ? 'red' : 'green';
         let targetShape = Math.random() > 0.5 ? 'circle' : 'square';
+        let targetSize = Math.random() > 0.5 ? 'big' : 'small'; // New feature
 
         let instruction = "";
+        const cText = targetColor === 'red' ? '빨간' : '녹색';
+        const sText = targetShape === 'circle' ? '동그라미' : '네모';
+        const zText = targetSize === 'big' ? '큰' : '작은';
+
         if (conditions === 1) {
-            instruction = `${targetColor === 'red' ? '빨간색' : '녹색'}이 나오면 클릭하세요!`;
+            instruction = `${cText}색이 나오면 클릭하세요!`;
+        } else if (conditions === 2) {
+            instruction = `${cText} ${sText}가 나오면 클릭하세요!`;
         } else {
-            instruction = `${targetColor === 'red' ? '빨간' : '녹색'} ${targetShape === 'circle' ? '동그라미' : '네모'}가 나오면 클릭하세요!`;
+            instruction = `${zText} ${cText} ${sText}가 나오면 클릭하세요!`;
         }
 
-        return { instruction, targetColor, targetShape, conditions };
+        return { instruction, targetColor, targetShape, targetSize, conditions };
     }
 };

@@ -63,16 +63,19 @@ class TaskE4 {
         // JSON serialization loses functions. So re-implement logic or passing simple criteria object is better.
         // For now, let's parse criteria from queryText simple heuristic or handle in generator better.
 
-        // Re-implement filter logic based on text content (Fragile but simple):
+        // Fix: Use the filter logic provided by the level generator directly
+        // The generator provides a stringified function. We hydrate it.
+        // Use structured criteria
+        this.criteria = data.criteria;
+
+        // Define filter function based on criteria
         this.filterFunc = (item) => {
-            if (this.queryText.includes("이하")) return item.price <= 500;
-            if (this.queryText.includes("색깔")) {
-                const t = this.queryText.split('"')[3];
-                const c = this.queryText.split('"')[1];
-                return item.type === t && item.color === c;
-            }
-            const t = this.queryText.split('"')[1];
-            return item.type === t;
+            const c = this.criteria;
+            if (c.mode === 1) return item.type === c.targetType;
+            if (c.mode === 2) return item.type === c.targetType && item.color === c.targetColor;
+            if (c.mode === 3) return item.price <= c.targetPrice;
+            if (c.mode === 4) return item.color === c.targetColor && item.price <= c.targetPrice;
+            return false;
         };
 
         document.getElementById('query-text').innerText = this.queryText;

@@ -78,8 +78,8 @@ class TaskD3 {
         ctx.clearRect(0, 0, 600, 400);
 
         // Edges
-        ctx.strokeStyle = '#b2bec3';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#636e72'; // Darker for visibility
+        ctx.lineWidth = 3; // Thicker
         this.edges.forEach(e => {
             const n1 = this.nodes.find(n => n.id === e.from);
             const n2 = this.nodes.find(n => n.id === e.to);
@@ -89,16 +89,18 @@ class TaskD3 {
             // Line
             ctx.beginPath();
             ctx.moveTo(n1.x, n1.y);
-            ctx.lineTo(n2.x, n2.y);
+            ctx.lineTo(n2.x - 40 * Math.cos(angle), n2.y - 20 * Math.sin(angle)); // Stop at box edge roughly
             ctx.stroke();
 
-            // Head
-            const tx = n2.x - 40 * Math.cos(angle); // Stop before box
-            const ty = n2.y - 20 * Math.sin(angle);
-            // Simple circle on line for now
-            ctx.fillStyle = '#b2bec3';
+            // Head (Triangle)
+            const tx = n2.x - 45 * Math.cos(angle);
+            const ty = n2.y - 25 * Math.sin(angle);
+
+            ctx.fillStyle = '#636e72';
             ctx.beginPath();
-            ctx.arc((n1.x * 2 + n2.x) / 3, (n1.y * 2 + n2.y) / 3, 3, 0, Math.PI * 2); // Dot on line
+            ctx.moveTo(tx, ty);
+            ctx.lineTo(tx - 10 * Math.cos(angle - Math.PI / 6), ty - 10 * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(tx - 10 * Math.cos(angle + Math.PI / 6), ty - 10 * Math.sin(angle + Math.PI / 6));
             ctx.fill();
         });
 
@@ -117,6 +119,7 @@ class TaskD3 {
     }
 
     onClick(e) {
+        if (this.isProcessing) return;
         const rect = this.canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
@@ -131,7 +134,10 @@ class TaskD3 {
     }
 
     check(id) {
-        if (id === this.question.a) {
+        // Support array of valid answers
+        const valid = Array.isArray(this.question.a) ? this.question.a.includes(id) : this.question.a === id;
+
+        if (valid) {
             alert("정답! 생태계의 흐름을 이해하셨군요.");
             if (this.level < 50) this.loadLevel(this.level + 1);
         } else {
