@@ -16,7 +16,7 @@ class TaskA4 {
                 <p>같은 모양의 카드를 찾아 **드래그하여 겹치세요**!</p>
             </div>
             
-            <div id="game-area" style="position:relative; width:600px; height:400px; background:#dfe6e9; margin:20px auto; border-radius:10px; border:2px solid #b2bec3;">
+            <div id="game-area" style="position:relative; width:600px; min-height:400px; height:auto; background:#dfe6e9; margin:20px auto; border-radius:10px; border:2px solid #b2bec3; padding-bottom: 20px;">
                 <!-- Cards will be placed here -->
             </div>
             
@@ -79,8 +79,14 @@ class TaskA4 {
             const col = i % cols;
 
             // Layout centering
+            // Layout centering
             const top = row * gapY + 20 + (Math.random() * 10 - 5);
             const left = col * gapX + 20 + (Math.random() * 10 - 5);
+
+            // Expand Area if needed
+            if (top + cardH > area.clientHeight) {
+                area.style.height = (top + cardH + 50) + 'px';
+            }
 
             card.style.cssText = `
                 position:absolute; 

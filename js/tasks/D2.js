@@ -40,10 +40,11 @@ class TaskD2 {
         if (inp) inp.value = lvl;
         const data = D2_LEVELS.generate(lvl);
         this.root = data.root;
-        this.targetName = data.targetName; // Can be String or Array
+        this.targetName = data.targetName;
         this.question = data.question;
+        this.startId = data.startId;
 
-        document.getElementById('question-text').innerText = this.question;
+        document.getElementById('question-text').innerHTML = this.question; // Use innerHTML for bold tags
 
         const container = document.getElementById('tree-container');
         container.innerHTML = '';
@@ -56,7 +57,13 @@ class TaskD2 {
 
         const box = document.createElement('div');
         box.innerText = node.name;
-        box.style.cssText = "padding:10px 20px; background:#fab1a0; border-radius:10px; font-weight:bold; cursor:pointer; border:2px solid #e17055;";
+
+        let bg = '#fab1a0';
+        if (node.id === this.startId) bg = '#ffeaa7'; // Highlight Start
+
+        box.style.cssText = `padding:10px 20px; background:${bg}; border-radius:10px; font-weight:bold; cursor:pointer; border:2px solid #e17055;`;
+        if (node.id === this.startId) box.style.border = "4px solid #fdcb6e";
+
         box.onclick = () => this.check(node.name);
 
         div.appendChild(box);

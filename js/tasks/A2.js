@@ -211,6 +211,7 @@ class TaskA2 {
         // Defaults
         let eyes = 1; // 1, 2, 3
         let horns = 0; // 0, 1, 2
+        let mouth = 'flat'; // smile, flat, sad
         let color = '#a29bfe';
         let radius = '50%'; // Circle
 
@@ -253,6 +254,8 @@ class TaskA2 {
         // 1. Random Base
         let finalEyes = 1 + Math.floor(Math.random() * 3);
         let finalHorns = Math.floor(Math.random() * 3);
+        const mouths = ['smile', 'flat', 'sad'];
+        let finalMouth = mouths[Math.floor(Math.random() * mouths.length)];
         const colors = ['#a29bfe', '#55efc4', '#ffeaa7'];
         let finalColor = colors[Math.floor(Math.random() * colors.length)];
         let finalRadius = (Math.random() > 0.5) ? '50%' : '10px';
@@ -261,17 +264,21 @@ class TaskA2 {
         if (val && val._multi) {
             if (val.eyes) finalEyes = val.eyes;
             if (val.horns) finalHorns = val.horns;
+            if (val.mouth) finalMouth = val.mouth;
             if (val.color) finalColor = val.color;
             if (val.shape) finalRadius = val.shape;
         } else {
+            if (ruleKey === 'eye') finalEyes = val; // Assuming ruleKey matches 'eye'
             if (ruleKey === 'eyes') finalEyes = val;
+            if (ruleKey === 'horn') finalHorns = val;
             if (ruleKey === 'horns') finalHorns = val;
+            if (ruleKey === 'mouth') finalMouth = val;
             if (ruleKey === 'color') finalColor = val;
             if (ruleKey === 'shape') finalRadius = val;
         }
 
         // Apply
-        eyes = finalEyes; horns = finalHorns; color = finalColor; radius = finalRadius;
+        eyes = finalEyes; horns = finalHorns; mouth = finalMouth; color = finalColor; radius = finalRadius;
 
         // Apply Styles
         el.style.background = color;
@@ -281,11 +288,21 @@ class TaskA2 {
         let content = '';
         for (let k = 0; k < eyes; k++) content += '👁️';
 
+        // Mouth Map
+        const mouthMap = { 'smile': '😊', 'flat': '😐', 'sad': '☹️' };
+        let mouthChar = mouthMap[mouth] || '😐'; // Default
+
         // Horns visual (simplified as prepend)
         let hornStr = '';
         for (let h = 0; h < horns; h++) hornStr += '▲';
 
-        el.innerHTML = `<div style="display:flex; flex-direction:column; align-items:center; line-height:1;"><span style="font-size:12px;">${hornStr}</span><span>${content}</span></div>`;
+        el.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; line-height:1;">
+                <span style="font-size:12px; color:#555;">${hornStr}</span>
+                <span>${content}</span>
+                <span style="font-size:14px; margin-top:-5px;">${mouthChar}</span>
+            </div>
+        `;
 
         return el;
     }

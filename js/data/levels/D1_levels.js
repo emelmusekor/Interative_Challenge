@@ -9,38 +9,51 @@ window.D1_LEVELS = {
         const names = ['철수', '영희', '민수', '지수', '호영', '준호', '나영', '동수', '미란', '경수', '혜진', '성민', '자영', '태호', '순희'];
         const people = names.slice(0, count);
 
-        // Random assign (Manito: Derangement usually, but here just directed edges)
-        // Ensure every person gives to exactly 1 person, receives from 1 person (Cycle decomposition)
-
-        // Simple Shuffle Shift
-        // [A,B,C] -> [B,C,A] (One cycle)
-        // Or multiple cycles? For game simplicity, let's just make 1 big cycle or random components.
-        // Let's make 1 big cycle for "Cycle" concept.
-
-        const shuffled = [...people].sort(() => Math.random() - 0.5);
+        // Random Directed Graph (Not just 1:1 Cycle)
+        // Allow nodes to receive from multiple people.
         const edges = [];
-        for (let i = 0; i < count; i++) {
-            edges.push({
-                from: shuffled[i],
-                to: shuffled[(i + 1) % count]
-            });
-        }
+
+        // Ensure connectivity or just random?
+        // Let's add random edges.
+        people.forEach(p => {
+            // Every person gives to at least 1 person?
+            // Or just random.
+            let target = people[Math.floor(Math.random() * count)];
+            while (target === p) {
+                target = people[Math.floor(Math.random() * count)];
+            }
+            edges.push({ from: p, to: target });
+
+            // Chance to give to another person (Multi-edge)
+            if (Math.random() > 0.7) {
+                let target2 = people[Math.floor(Math.random() * count)];
+                if (target2 !== p && target2 !== target) {
+                    edges.push({ from: p, to: target2 });
+                }
+            }
+        });
 
         // Generate Question with Hops
-        const hops = lvl < 10 ? 1 : (lvl < 20 ? 2 : 3);
-        const recipient = shuffled[Math.floor(Math.random() * count)];
+        // Find a recipient, ideally one with multiple senders for Level > 10
+        const counts = {};
+        edges.forEach(e => {
+            if (!counts[e.to]) counts[e.to] = [];
+            counts[e.to].push(e.from);
+        });
 
-        let current = recipient;
-        for (let h = 0; h < hops; h++) {
-            const edge = edges.find(e => e.to === current);
-            if (edge) current = edge.from;
+        // Pick target
+        const recipients = Object.keys(counts);
+        let target = recipients[Math.floor(Math.random() * recipients.length)];
+
+        // Try to find one with multiple senders if lvl is high
+        if (lvl > 5) {
+            const multi = recipients.find(r => counts[r].length > 1);
+            if (multi) target = multi;
         }
-        const sender = current;
 
-        let qText = `${recipient}에게 선물을 주는 사람은?`;
-        if (hops === 2) qText = `${recipient}의 마니또의 마니또는? (2단계 건너서 주는 사람)`;
-        if (hops === 3) qText = `${recipient}에게 3단계를 거쳐 선물을 주는 사람은?`;
+        let qText = `${target}에게 선물을 주는 사람을 **모두** 고르세요.`;
+        const answers = counts[target]; // Array of names
 
-        return { people, edges, question: { q: qText, a: sender } };
+        return { people, edges, question: { q: qText, a: answers } };
     }
 };

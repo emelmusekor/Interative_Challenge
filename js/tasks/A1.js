@@ -112,10 +112,10 @@ class TaskA1 {
         // Setup Visual Face for Target
         tVis.innerHTML = '';
         const map = {
-            'round': 'border-radius:50%;', 'square': 'border-radius:0%;', 'oval': 'border-radius:40%; height:140px; top:5px;', 'triangle': 'clip-path: polygon(50% 0%, 0% 100%, 100% 100%);', 'heart': 'clip-path: polygon(50% 0%, 100% 35%, 82% 100%, 50% 100%, 18% 100%, 0% 35%);',
-            'normal': '👀', 'wink': '😉', 'glasses': '👓', 'angry': '😠', 'surprised': '😲',
-            'small': '👃', 'long': '🤥', 'round': '🐽', 'pointed': '🐁', 'flat': '👃',
-            'smile': '👄', 'flat': '😐', 'open': '😮', 'frown': '☹️', 'tongue': '😛'
+            'round': 'border-radius:50%;', 'square': 'border-radius:0%;', 'oval': 'border-radius:40%; height:140px; top:5px;', 'triangle': 'clip-path: polygon(50% 0%, 0% 100%, 100% 100%);', 'heart': 'clip-path: polygon(50% 0%, 100% 35%, 82% 100%, 50% 100%, 18% 100%, 0% 35%);', 'star': 'clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);', 'diamond': 'clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);',
+            'normal': '👀', 'wink': '😉', 'glasses': '👓', 'angry': '😠', 'surprised': '😲', 'closed': '😆', 'teary': '😢',
+            'small': '👃', 'long': '🤥', 'round': '🐽', 'pointed': '🐁', 'flat': '👃', 'pig': '🐷', 'button': '🔘',
+            'smile': '👄', 'flat': '😐', 'open': '😮', 'frown': '☹️', 'tongue': '😛', 'zipper': '🤐', 'mask': '😷'
         };
 
         tVis.innerHTML = `
@@ -138,10 +138,10 @@ class TaskA1 {
 
     renderMontage() {
         const map = {
-            'round': 'border-radius:50%;', 'square': 'border-radius:0%;', 'oval': 'border-radius:40%; height:140px; top:5px;', 'triangle': 'clip-path: polygon(50% 0%, 0% 100%, 100% 100%);', 'heart': 'clip-path: polygon(50% 0%, 100% 35%, 82% 100%, 50% 100%, 18% 100%, 0% 35%);',
-            'normal': '👀', 'wink': '😉', 'glasses': '👓', 'angry': '😠', 'surprised': '😲',
-            'small': '👃', 'long': '🤥', 'round': '🐽', 'pointed': '🐁', 'flat': '👃',
-            'smile': '👄', 'flat': '😐', 'open': '😮', 'frown': '☹️', 'tongue': '😛'
+            'round': 'border-radius:50%;', 'square': 'border-radius:0%;', 'oval': 'border-radius:40%; height:140px; top:5px;', 'triangle': 'clip-path: polygon(50% 0%, 0% 100%, 100% 100%);', 'heart': 'clip-path: polygon(50% 0%, 100% 35%, 82% 100%, 50% 100%, 18% 100%, 0% 35%);', 'star': 'clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);', 'diamond': 'clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);',
+            'normal': '👀', 'wink': '😉', 'glasses': '👓', 'angry': '😠', 'surprised': '😲', 'closed': '😆', 'teary': '😢',
+            'small': '👃', 'long': '🤥', 'round': '🐽', 'pointed': '🐁', 'flat': '👃', 'pig': '🐷', 'button': '🔘',
+            'smile': '👄', 'flat': '😐', 'open': '😮', 'frown': '☹️', 'tongue': '😛', 'zipper': '🤐', 'mask': '😷'
         };
 
         document.getElementById('p-face').style.cssText = `position:absolute; width:100%; height:100%; top:0; left:0; border:2px solid #000; background:#ffeaa7; ${map[this.selection.face]}`;

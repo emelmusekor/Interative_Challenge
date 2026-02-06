@@ -54,6 +54,8 @@ class TaskD1 {
         // Render Graph
         this.renderGraph();
 
+        this.selected = new Set();
+
         // Render Options
         const opts = document.getElementById('options-container');
         opts.innerHTML = '';
@@ -61,9 +63,26 @@ class TaskD1 {
             const btn = document.createElement('button');
             btn.innerText = p;
             btn.style.cssText = "margin:5px; padding:10px 20px; font-size:16px; cursor:pointer; background:#eee; border:none; border-radius:5px;";
-            btn.onclick = () => this.check(p);
+            btn.onclick = () => {
+                if (this.selected.has(p)) {
+                    this.selected.delete(p);
+                    btn.style.background = '#eee';
+                    btn.style.color = 'black';
+                } else {
+                    this.selected.add(p);
+                    btn.style.background = '#0984e3';
+                    btn.style.color = 'white';
+                }
+            };
             opts.appendChild(btn);
         });
+
+        // Add Submit Button
+        const subBtn = document.createElement('button');
+        subBtn.innerText = "✅ 결정";
+        subBtn.style.cssText = "display:block; margin:20px auto; padding:10px 40px; background:#00cec9; color:white; border:none; border-radius:5px; font-size:18px; cursor:pointer;";
+        subBtn.onclick = () => this.check();
+        opts.appendChild(subBtn);
     }
 
     renderGraph() {
@@ -124,12 +143,24 @@ class TaskD1 {
         });
     }
 
-    check(ans) {
-        if (ans === this.question.a) {
+    check() {
+        const correctList = this.question.a; // Array
+        const userList = Array.from(this.selected);
+
+        // Check exact match
+        let isCorrect = true;
+        if (userList.length !== correctList.length) isCorrect = false;
+        else {
+            userList.forEach(u => {
+                if (!correctList.includes(u)) isCorrect = false;
+            });
+        }
+
+        if (isCorrect) {
             alert("정답! 관계를 잘 파악했습니다.");
             if (this.level < 50) this.loadLevel(this.level + 1);
         } else {
-            alert("틀렸습니다. 화살표 방향을 잘 보세요.");
+            alert(`틀렸습니다.\n정답은: ${correctList.join(', ')}`);
         }
     }
 }

@@ -23,55 +23,50 @@ window.D2_LEVELS = {
         };
         addChildren(root, depth);
 
-        // Relationship Logic
-        // Types: Parent, Child, Sibling
-        let qType = 'child';
-        if (lvl > 10) qType = 'parent';
-        if (lvl > 20) qType = Math.random() > 0.5 ? 'parent' : 'sibling';
+        // Relationship Path Logic
+        // "From X, go [Up/Down/Side]..."
 
-        // Helper
-        const getAllNodes = (n) => {
-            let list = [n];
-            n.items.forEach(c => list = list.concat(getAllNodes(c)));
-            return list;
-        };
+        // 1. Pick a valid Start Node
         const allNodes = getAllNodes(root);
+        // Remove root from start if we want to go up?
+        // Let's just pick any.
+        const startNode = allNodes[Math.floor(Math.random() * allNodes.length)];
 
-        // Assign Parents
-        const assignParent = (n, p) => {
-            n.parent = p;
-            n.items.forEach(c => assignParent(c, n));
-        };
-        assignParent(root, null);
+        // 2. Generate Path
+        const steps = lvl < 10 ? 1 : (lvl < 25 ? 2 : 3);
+        let current = startNode;
+        let pathDesc = [];
 
-        let subject, answerName, qText;
+        for (let i = 0; i < steps; i++) {
+            const moves = [];
+            // Check possible moves
+            if (current.parent) moves.push('parent');
+            if (current.items.length > 0) moves.push('child');
+            if (current.parent && current.parent.items.length > 1) moves.push('sibling');
 
-        if (qType === 'parent') {
-            const valid = allNodes.filter(n => n.parent !== null);
-            subject = valid[Math.floor(Math.random() * valid.length)];
-            answerName = subject.parent.name;
-            qText = `${subject.name}의 **부모님**(상위 노드)은 누구인가요?`;
-        } else if (qType === 'sibling') {
-            const valid = allNodes.filter(n => n.parent && n.parent.items.length > 1);
-            if (valid.length === 0) {
-                qType = 'child';
-            } else {
-                subject = valid[Math.floor(Math.random() * valid.length)];
-                const siblings = subject.parent.items.filter(x => x.id !== subject.id);
-                // Any sibling is valid
-                answerName = siblings.map(s => s.name);
-                qText = `${subject.name}의 **형제/자매**를 찾으세요.`;
+            if (moves.length === 0) break;
+
+            const move = moves[Math.floor(Math.random() * moves.length)];
+
+            if (move === 'parent') {
+                current = current.parent;
+                pathDesc.push("부모님");
+            } else if (move === 'child') {
+                current = current.items[Math.floor(Math.random() * current.items.length)];
+                pathDesc.push("자식");
+            } else if (move === 'sibling') {
+                const siblings = current.parent.items.filter(x => x.id !== current.id);
+                current = siblings[Math.floor(Math.random() * siblings.length)];
+                pathDesc.push("형제/자매");
             }
         }
 
-        if (qType === 'child') {
-            const valid = allNodes.filter(n => n.items.length > 0);
-            subject = valid[Math.floor(Math.random() * valid.length)];
-            // Any child is valid
-            answerName = subject.items.map(c => c.name);
-            qText = `${subject.name}의 **자식**(하위 노드)을 찾으세요.`;
-        }
+        const answerName = current.name;
+        // Construct Question
+        // "Find [Start]'s [Path1]'s [Path2]..."
+        let qText = `${startNode.name}의 **${pathDesc.join('의 ')}**를 찾으세요.`;
 
-        return { root, targetName: answerName, question: qText };
+        // Pass startNode ID to highlight it?
+        return { root, targetName: answerName, question: qText, startId: startNode.id };
     }
 };
